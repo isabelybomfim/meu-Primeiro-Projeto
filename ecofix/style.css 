@@ -1,0 +1,21 @@
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f3f6f5;
+    margin: 0;
+    padding: 20px;
+}
+
+header {
+    background: #173b35;
+    color: white;
+    padding: 25px;
+    border-radius: 12px;
+}
+
+main {
+    background: white;
+    padding: 25px;
+    margin-top: 20px;
+    border-radius: 12px;
+}
