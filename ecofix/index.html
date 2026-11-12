@@ -4,21 +4,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>EcoFix | Economia Industrial</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-    <header>
-        <h1>EcoFix</h1>
-        <p>Calculadora de Economia Industrial</p>
+    <header class="cabecalho">
+        <div class="logo">
+            <h1>EcoFix</h1>
+            <span>ECONOMIA INDUSTRIAL</span>
+        </div>
+
+        <p>Transformando substituições em economia.</p>
     </header>
 
-    <main>
-        <h2>Bem-vindo ao EcoFix!</h2>
-        <p>Vamos transformar substituições em economia.</p>
+    <main class="container">
+
+        <section class="boas-vindas">
+            <h2>Painel de economia</h2>
+            <p>Acompanhe os resultados das substituições
+            de fitas convencionais por reutilizáveis.</p>
+        </section>
+
+        <section class="indicadores">
+
+            <div class="card">
+                <h3>Economia por caminhão</h3>
+                <p>R$ 0,00</p>
+            </div>
+
+            <div class="card">
+                <h3>Economia diária</h3>
+                <p>R$ 0,00</p>
+            </div>
+
+            <div class="card">
+                <h3>Economia mensal</h3>
+                <p>R$ 0,00</p>
+            </div>
+
+            <div class="card">
+                <h3>Economia anual</h3>
+                <p>R$ 0,00</p>
+            </div>
+
+        </section>
+
+        <section class="cadastro">
+
+            <h2>Nova substituição</h2>
+
+            <label>Local de aplicação</label>
+            <input type="text"
+            placeholder="Ex.: Chicote elétrico do motor">
+
+            <label>Modelo da fita convencional</label>
+            <select>
+                <option>Selecione um modelo</option>
+                <option>Tyton modelo A</option>
+                <option>Tyton modelo B</option>
+            </select>
+
+            <label>Modelo da fita reutilizável</label>
+            <select>
+                <option>Selecione um modelo</option>
+                <option>Reutilizável modelo A</option>
+                <option>Reutilizável modelo B</option>
+            </select>
+
+            <label>Quantidade por caminhão</label>
+            <input type="number"
+            placeholder="Digite a quantidade">
+
+            <button type="button">
+                Adicionar substituição
+            </button>
+
+        </section>
+
+        <section class="locais">
+            <h2>Locais cadastrados</h2>
+            <p>Nenhuma substituição cadastrada.</p>
+        </section>
+
     </main>
 
+    <footer>
+        <p>EcoFix © 2026 | Projeto de Engenharia</p>
+    </footer>
+
     <script src="app.js"></script>
+
 </body>
 </html>
