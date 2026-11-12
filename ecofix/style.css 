@@ -1,21 +1,145 @@
 
+/* CONFIGURAÇÕES GERAIS */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: Arial, sans-serif;
-    background: #f3f6f5;
-    margin: 0;
-    padding: 20px;
+    background: #f1f5f2;
+    color: #24332d;
 }
 
-header {
+/* CABEÇALHO */
+
+.cabecalho {
     background: #173b35;
     color: white;
-    padding: 25px;
-    border-radius: 12px;
+    padding: 30px 8%;
 }
 
-main {
+.logo h1 {
+    font-size: 32px;
+}
+
+.logo span {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #b8d9a7;
+}
+
+.cabecalho p {
+    margin-top: 12px;
+    color: #d5e5dd;
+}
+
+/* CONTEÚDO */
+
+.container {
+    width: 85%;
+    max-width: 1100px;
+    margin: 35px auto;
+}
+
+.boas-vindas {
+    margin-bottom: 25px;
+}
+
+.boas-vindas h2 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+/* INDICADORES */
+
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    border-left: 5px solid #639879;
+    box-shadow: 0 3px 12px #0000000a;
+}
+
+.card h3 {
+    font-size: 13px;
+    color: #65756c;
+}
+
+.card p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #173b35;
+    margin-top: 12px;
+}
+
+/* CADASTRO */
+
+.cadastro, .locais {
     background: white;
     padding: 25px;
-    margin-top: 20px;
     border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 12px #0000000a;
+}
+
+.cadastro h2, .locais h2 {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    font-size: 13px;
+    margin: 15px 0 7px;
+}
+
+input, select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d7e1da;
+    border-radius: 7px;
+    background: #fafcfb;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 22px;
+    border: none;
+    border-radius: 7px;
+    background: #173b35;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* RODAPÉ */
+
+footer {
+    text-align: center;
+    padding: 25px;
+    color: #78867e;
+    font-size: 12px;
+}
+
+/* ADAPTAÇÃO PARA CELULAR */
+
+@media (max-width: 600px) {
+    .container {
+        width: 92%;
+    }
+
+    .indicadores {
+        grid-template-columns: 1fr;
+    }
 }
