@@ -257,35 +257,6 @@ function atualizarLocais() {
     });
 }
 
-
-    substituicoes.forEach((item, indice) => {
-        const economia = calcularEconomia(item);
-
-        const linha = document.createElement("div");
-
-        const nome = document.createElement("strong");
-        nome.textContent = item.local;
-
-        const detalhe = document.createElement("p");
-        detalhe.textContent =
-            "Quantidade: " + item.quantidade +
-            " | Economia por caminhão: " +
-            formatarDinheiro(economia);
-
-        const remover = document.createElement("button");
-        remover.textContent = "Remover";
-        remover.type = "button";
-
-        remover.onclick = function () {
-            substituicoes.splice(indice, 1);
-            atualizarPainel();
-        };
-
-        linha.append(nome, detalhe, remover);
-        listaLocais.appendChild(linha);
-    });
-}
-
 // Adicionar substituição
 botao.addEventListener("click", function () {
     const local = campos[0].value.trim();
