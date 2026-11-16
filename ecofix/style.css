@@ -182,3 +182,39 @@ footer {
         margin-top: 20px;
     }
 }
+
+
+/* FORMULÁRIO DE EDIÇÃO */
+
+.item-local {
+    padding: 15px 0;
+    border-bottom: 1px solid #DCE7DF;
+}
+
+.item-local:last-child {
+    border-bottom: none;
+}
+
+.form-edicao {
+    background: #F1F5F2;
+    padding: 18px;
+    margin-top: 15px;
+    border-radius: 10px;
+}
+
+.form-edicao h3 {
+    color: #173B35;
+    margin-top: 0;
+}
+
+.form-edicao button {
+    margin-right: 8px;
+}
+
+.form-edicao button:last-child {
+    background: #65756D;
+}
+
+.form-edicao[hidden] {
+    display: none;
+}
