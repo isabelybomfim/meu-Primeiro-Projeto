@@ -1,0 +1,184 @@
+
+:root {
+    --verde-escuro: #173B35;
+    --verde: #639879;
+    --verde-claro: #B8D9A7;
+    --fundo: #F1F5F2;
+    --branco: #FFFFFF;
+    --texto: #19352E;
+    --cinza: #65756D;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+}
+
+/* CABEÇALHO */
+
+.cabecalho {
+    background: var(--verde-escuro);
+    color: white;
+    padding: 25px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.logo h1 {
+    font-size: 32px;
+    margin: 0;
+}
+
+.logo span {
+    color: var(--verde-claro);
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.cabecalho p {
+    font-size: 15px;
+}
+
+/* CONTEÚDO */
+
+.container {
+    max-width: 1100px;
+    margin: 35px auto;
+    padding: 0 20px;
+}
+
+.boas-vindas h2 {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.boas-vindas p {
+    color: var(--cinza);
+}
+
+/* INDICADORES */
+
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin: 25px 0;
+}
+
+.card {
+    background: var(--branco);
+    padding: 22px;
+    border-radius: 12px;
+    border: 1px solid #DCE7DF;
+    box-shadow: 0 3px 10px #173B3510;
+}
+
+.card h3 {
+    font-size: 14px;
+    color: var(--cinza);
+}
+
+.card p {
+    color: var(--verde-escuro);
+    font-size: 25px;
+    font-weight: bold;
+}
+
+/* FORMULÁRIO */
+
+.cadastro,
+.locais {
+    background: var(--branco);
+    padding: 25px;
+    border-radius: 12px;
+    margin-top: 20px;
+    border: 1px solid #DCE7DF;
+}
+
+.cadastro h2,
+.locais h2 {
+    color: var(--verde-escuro);
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 6px;
+}
+
+input,
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #BDCDC3;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+}
+
+input:focus,
+select:focus {
+    outline: 2px solid var(--verde);
+}
+
+/* BOTÃO */
+
+button {
+    background: var(--verde-escuro);
+    color: white;
+    border: none;
+    padding: 13px 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: var(--verde);
+}
+
+/* RODAPÉ */
+
+footer {
+    text-align: center;
+    color: var(--cinza);
+    padding: 25px;
+    font-size: 13px;
+}
+
+/* TABLET E CELULAR */
+
+@media (max-width: 800px) {
+    .indicadores {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .indicadores {
+        grid-template-columns: 1fr;
+    }
+
+    .cabecalho {
+        display: block;
+    }
+
+    .cabecalho p {
+        margin-top: 15px;
+    }
+
+    .container {
+        margin-top: 20px;
+    }
+}
