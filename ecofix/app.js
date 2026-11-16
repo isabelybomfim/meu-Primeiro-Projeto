@@ -159,6 +159,8 @@ function atualizarPainel() {
 }
 
 // Mostrar locais cadastrados
+
+// Mostrar locais cadastrados
 function atualizarLocais() {
     listaLocais.innerHTML = "<h2>Locais cadastrados</h2>";
 
@@ -167,6 +169,94 @@ function atualizarLocais() {
             "<p>Nenhuma substituição cadastrada.</p>";
         return;
     }
+
+    substituicoes.forEach((item, indice) => {
+        const economia = calcularEconomia(item);
+
+        const linha = document.createElement("div");
+
+        const nome = document.createElement("strong");
+        nome.textContent = item.local;
+
+        const detalhe = document.createElement("p");
+        detalhe.textContent =
+            "Quantidade: " + item.quantidade +
+            " | Ciclos: " + item.ciclos +
+            " | Economia por caminhão: " +
+            formatarDinheiro(economia);
+
+        // Botão editar
+        const editar = document.createElement("button");
+        editar.textContent = "Editar";
+        editar.type = "button";
+
+        editar.onclick = function () {
+            const novoLocal = prompt(
+                "Nome do local:",
+                item.local
+            );
+
+            if (novoLocal === null) return;
+
+            const novaQuantidade = prompt(
+                "Nova quantidade:",
+                item.quantidade
+            );
+
+            if (novaQuantidade === null) return;
+
+            const novosCiclos = prompt(
+                "Novos ciclos de reutilização:",
+                item.ciclos
+            );
+
+            if (novosCiclos === null) return;
+
+            const quantidade = Number(novaQuantidade);
+            const ciclos = Number(novosCiclos);
+
+            if (
+                !novoLocal.trim() ||
+                !Number.isInteger(quantidade) ||
+                quantidade <= 0 ||
+                !Number.isInteger(ciclos) ||
+                ciclos <= 0
+            ) {
+                alert("Confira os dados informados.");
+                return;
+            }
+
+            substituicoes[indice] = {
+                ...item,
+                local: novoLocal.trim(),
+                quantidade: quantidade,
+                ciclos: ciclos
+            };
+
+            atualizarPainel();
+        };
+
+        // Botão remover
+        const remover = document.createElement("button");
+        remover.textContent = "Remover";
+        remover.type = "button";
+
+        remover.onclick = function () {
+            const confirmar = confirm(
+                "Deseja realmente remover este cadastro?"
+            );
+
+            if (confirmar) {
+                substituicoes.splice(indice, 1);
+                atualizarPainel();
+            }
+        };
+
+        linha.append(nome, detalhe, editar, remover);
+        listaLocais.appendChild(linha);
+    });
+}
+
 
     substituicoes.forEach((item, indice) => {
         const economia = calcularEconomia(item);
