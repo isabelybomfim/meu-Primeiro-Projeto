@@ -26,6 +26,46 @@ let mesesAno = 12;
 
 let substituicoes = [];
 
+// Identificação dos dados salvos
+const CHAVE_ECOFIX = "ecofix_dados_v1";
+
+// Recuperar dados anteriores
+function carregarDados() {
+    try {
+        const dados = JSON.parse(
+            localStorage.getItem(CHAVE_ECOFIX)
+        );
+
+        if (dados) {
+            substituicoes = dados.substituicoes || [];
+            producaoDiaria = dados.producaoDiaria ?? 30;
+            diasMes = dados.diasMes ?? 22;
+            mesesAno = dados.mesesAno ?? 12;
+        }
+    } catch (erro) {
+        console.log("Erro ao recuperar dados:", erro);
+    }
+}
+
+// Salvar informações automaticamente
+function salvarDados() {
+    const dados = {
+        substituicoes,
+        producaoDiaria,
+        diasMes,
+        mesesAno
+    };
+
+    localStorage.setItem(
+        CHAVE_ECOFIX,
+        JSON.stringify(dados)
+    );
+}
+
+// Carregar informações ao abrir o site
+carregarDados();
+
+
 // Criar campo de ciclos de reutilização
 const labelCiclos = document.createElement("label");
 labelCiclos.textContent = "Ciclos estimados de reutilização";
@@ -55,6 +95,9 @@ configuracao.innerHTML = `
 `;
 
 cadastro.parentNode.insertBefore(configuracao, cadastro);
+configuracao.querySelector("#producao").value = producaoDiaria;
+configuracao.querySelector("#diasMes").value = diasMes;
+configuracao.querySelector("#mesesAno").value = mesesAno;
 
 // Criar botão de exportação
 const botaoExportar = document.createElement("button");
@@ -85,6 +128,7 @@ function calcularEconomia(item) {
 
 // Atualizar os indicadores
 function atualizarPainel() {
+    salvarDados();
     const economiaTotal = substituicoes.reduce(
         (total, item) => total + calcularEconomia(item),
         0
