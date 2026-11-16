@@ -160,7 +160,6 @@ function atualizarPainel() {
 
 // Mostrar locais cadastrados
 
-// Mostrar locais cadastrados
 function atualizarLocais() {
     listaLocais.innerHTML = "<h2>Locais cadastrados</h2>";
 
@@ -174,6 +173,7 @@ function atualizarLocais() {
         const economia = calcularEconomia(item);
 
         const linha = document.createElement("div");
+        linha.className = "item-local";
 
         const nome = document.createElement("strong");
         nome.textContent = item.local;
@@ -190,50 +190,83 @@ function atualizarLocais() {
         editar.textContent = "Editar";
         editar.type = "button";
 
-        editar.onclick = function () {
-            const novoLocal = prompt(
-                "Nome do local:",
-                item.local
-            );
+        // Formulário de edição
+        const formulario = document.createElement("div");
+        formulario.className = "form-edicao";
+        formulario.hidden = true;
 
-            if (novoLocal === null) return;
+        formulario.innerHTML = `
+            <h3>Editar substituição</h3>
 
-            const novaQuantidade = prompt(
-                "Nova quantidade:",
-                item.quantidade
-            );
+            <label>Local de aplicação</label>
+            <input class="edit-local" type="text">
 
-            if (novaQuantidade === null) return;
+            <label>Quantidade por caminhão</label>
+            <input class="edit-quantidade" type="number" min="1">
 
-            const novosCiclos = prompt(
-                "Novos ciclos de reutilização:",
-                item.ciclos
-            );
+            <label>Ciclos estimados de reutilização</label>
+            <input class="edit-ciclos" type="number" min="1">
+        `;
 
-            if (novosCiclos === null) return;
+        const campoLocal =
+            formulario.querySelector(".edit-local");
 
-            const quantidade = Number(novaQuantidade);
-            const ciclos = Number(novosCiclos);
+        const campoQuantidade =
+            formulario.querySelector(".edit-quantidade");
+
+        const campoCiclos =
+            formulario.querySelector(".edit-ciclos");
+
+        campoLocal.value = item.local;
+        campoQuantidade.value = item.quantidade;
+        campoCiclos.value = item.ciclos;
+
+        // Botão salvar
+        const salvar = document.createElement("button");
+        salvar.textContent = "Salvar alterações";
+        salvar.type = "button";
+
+        salvar.onclick = function () {
+            const novoLocal = campoLocal.value.trim();
+            const novaQuantidade = Number(campoQuantidade.value);
+            const novosCiclos = Number(campoCiclos.value);
 
             if (
-                !novoLocal.trim() ||
-                !Number.isInteger(quantidade) ||
-                quantidade <= 0 ||
-                !Number.isInteger(ciclos) ||
-                ciclos <= 0
+                !novoLocal ||
+                !Number.isInteger(novaQuantidade) ||
+                novaQuantidade <= 0 ||
+                !Number.isInteger(novosCiclos) ||
+                novosCiclos <= 0
             ) {
-                alert("Confira os dados informados.");
+                alert("Preencha os campos corretamente.");
                 return;
             }
 
             substituicoes[indice] = {
                 ...item,
-                local: novoLocal.trim(),
-                quantidade: quantidade,
-                ciclos: ciclos
+                local: novoLocal,
+                quantidade: novaQuantidade,
+                ciclos: novosCiclos
             };
 
             atualizarPainel();
+        };
+
+        // Botão cancelar
+        const cancelar = document.createElement("button");
+        cancelar.textContent = "Cancelar";
+        cancelar.type = "button";
+
+        cancelar.onclick = function () {
+            formulario.hidden = true;
+            editar.hidden = false;
+        };
+
+        formulario.append(salvar, cancelar);
+
+        editar.onclick = function () {
+            formulario.hidden = false;
+            editar.hidden = true;
         };
 
         // Botão remover
@@ -252,7 +285,14 @@ function atualizarLocais() {
             }
         };
 
-        linha.append(nome, detalhe, editar, remover);
+        linha.append(
+            nome,
+            detalhe,
+            editar,
+            remover,
+            formulario
+        );
+
         listaLocais.appendChild(linha);
     });
 }
