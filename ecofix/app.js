@@ -1,9 +1,8 @@
-
 // ======================================
-// ECOFIX - CALCULADORA DE ECONOMIA
+// ECOFIX - CALCULADORA DE ECONOMIA (v2)
 // ======================================
 
-// Preços fictícios para demonstração
+// Preços fictícios para demonstração (substituir por dados reais validados)
 const modelosConvencionais = [0.80, 1.20];
 const modelosReutilizaveis = [3.50, 5.00];
 
@@ -56,10 +55,14 @@ function salvarDados() {
         mesesAno
     };
 
-    localStorage.setItem(
-        CHAVE_ECOFIX,
-        JSON.stringify(dados)
-    );
+    try {
+        localStorage.setItem(
+            CHAVE_ECOFIX,
+            JSON.stringify(dados)
+        );
+    } catch (erro) {
+        console.log("Não foi possível salvar os dados:", erro);
+    }
 }
 
 // Carregar informações ao abrir o site
@@ -106,6 +109,27 @@ botaoExportar.type = "button";
 
 cadastro.appendChild(botaoExportar);
 
+// Criar seção de análise complementar (logo após os indicadores)
+const analise = document.createElement("section");
+analise.className = "analise";
+
+const blocoIndicadores = document.querySelector(".indicadores");
+blocoIndicadores.parentNode.insertBefore(
+    analise,
+    blocoIndicadores.nextSibling
+);
+
+// Criar seção de gráficos (logo após a análise complementar)
+const graficos = document.createElement("section");
+graficos.className = "graficos";
+graficos.hidden = true;
+graficos.innerHTML = `
+    <h2>Gráficos</h2>
+    <div class="grafico"><canvas id="graficoCustos"></canvas></div>
+    <div class="grafico"><canvas id="graficoProjecao"></canvas></div>
+`;
+analise.parentNode.insertBefore(graficos, analise.nextSibling);
+
 // Formatação em reais
 function formatarDinheiro(valor) {
     return valor.toLocaleString("pt-BR", {
@@ -114,16 +138,234 @@ function formatarDinheiro(valor) {
     });
 }
 
-// Calcular economia por caminhão
-function calcularEconomia(item) {
-    const custoConvencional =
-        item.quantidade * item.precoConvencional;
+// ----- Cálculos -----
 
-    const custoReutilizavel =
-        item.quantidade *
-        (item.precoReutilizavel / item.ciclos);
+// Custo convencional evitado por caminhão
+function custoConvencional(item) {
+    return item.quantidade * item.precoConvencional;
+}
 
-    return custoConvencional - custoReutilizavel;
+// Custo amortizado da reutilizável por caminhão
+function custoAmortizado(item, ciclos = item.ciclos) {
+    return item.quantidade * (item.precoReutilizavel / ciclos);
+}
+
+// Economia estimada por caminhão
+function calcularEconomia(item, ciclos = item.ciclos) {
+    return custoConvencional(item) - custoAmortizado(item, ciclos);
+}
+
+// Investimento inicial (quantidade × preço reutilizável)
+function investimentoInicial(item) {
+    return item.quantidade * item.precoReutilizavel;
+}
+
+// Ciclos mínimos para a reutilizável empatar com a convencional
+function ciclosEquilibrio(item) {
+    return item.precoReutilizavel / item.precoConvencional;
+}
+
+// Economia anual para um fator aplicado aos ciclos (cenários)
+function economiaAnualCenario(fator) {
+    const porCaminhao = substituicoes.reduce(
+        (total, item) => {
+            const ciclos = Math.max(1, Math.round(item.ciclos * fator));
+            return total + calcularEconomia(item, ciclos);
+        },
+        0
+    );
+
+    return porCaminhao * producaoDiaria * diasMes * mesesAno;
+}
+
+// Atualizar análise complementar
+function atualizarAnalise() {
+    analise.innerHTML = "<h2>Análise complementar</h2>";
+
+    if (substituicoes.length === 0) {
+        return;
+    }
+
+    const investimento = substituicoes.reduce(
+        (total, item) => total + investimentoInicial(item),
+        0
+    );
+
+    const linhas = [
+        ["Investimento inicial por caminhão", formatarDinheiro(investimento)],
+        ["Cenário conservador (50% dos ciclos)", formatarDinheiro(economiaAnualCenario(0.5)) + "/ano"],
+        ["Cenário informado (100% dos ciclos)", formatarDinheiro(economiaAnualCenario(1)) + "/ano"],
+        ["Cenário otimista (150% dos ciclos)", formatarDinheiro(economiaAnualCenario(1.5)) + "/ano"]
+    ];
+
+    linhas.forEach(([rotulo, valor]) => {
+        const p = document.createElement("p");
+        p.textContent = rotulo + ": " + valor;
+        analise.appendChild(p);
+    });
+
+    const aviso = document.createElement("small");
+    aviso.textContent =
+        "Valores estimados com preços fictícios de teste. " +
+        "Não representam economia líquida comprovada: custos de " +
+        "inspeção, limpeza e recuperação ainda não foram considerados.";
+    analise.appendChild(aviso);
+}
+
+// ----- Gráficos (Chart.js carregado sob demanda) -----
+
+let chartCarregando = null;
+
+function carregarChartJs() {
+    if (window.Chart) {
+        return Promise.resolve(true);
+    }
+
+    if (!chartCarregando) {
+        chartCarregando = new Promise(resolve => {
+            const script = document.createElement("script");
+            script.src =
+                "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
+            script.onload = () => resolve(true);
+            script.onerror = () => {
+                chartCarregando = null;
+                resolve(false);
+            };
+            document.head.appendChild(script);
+        });
+    }
+
+    return chartCarregando;
+}
+
+// Economia mensal para um fator aplicado aos ciclos
+function economiaMensalCenario(fator) {
+    const porCaminhao = substituicoes.reduce(
+        (total, item) => {
+            const ciclos = Math.max(1, Math.round(item.ciclos * fator));
+            return total + calcularEconomia(item, ciclos);
+        },
+        0
+    );
+
+    return porCaminhao * producaoDiaria * diasMes;
+}
+
+let graficoCustos = null;
+let graficoProjecao = null;
+
+const opcoesBase = {
+    responsive: true,
+    animation: false,
+    scales: {
+        y: {
+            ticks: {
+                callback: valor => formatarDinheiro(valor)
+            }
+        }
+    }
+};
+
+function opcoesComTitulo(titulo) {
+    return {
+        ...opcoesBase,
+        plugins: {
+            title: { display: true, text: titulo },
+            tooltip: {
+                callbacks: {
+                    label: contexto =>
+                        contexto.dataset.label + ": " +
+                        formatarDinheiro(contexto.parsed.y)
+                }
+            }
+        }
+    };
+}
+
+async function atualizarGraficos() {
+    if (substituicoes.length === 0) {
+        graficos.hidden = true;
+        return;
+    }
+
+    const carregou = await carregarChartJs();
+
+    if (!carregou) {
+        graficos.hidden = true;
+        return;
+    }
+
+    // Lê o estado atual (pode ter mudado durante o carregamento)
+    graficos.hidden = substituicoes.length === 0;
+
+    if (substituicoes.length === 0) {
+        return;
+    }
+
+    if (graficoCustos) graficoCustos.destroy();
+    if (graficoProjecao) graficoProjecao.destroy();
+
+    // Gráfico 1: custo por caminhão em cada local
+    graficoCustos = new Chart(
+        document.querySelector("#graficoCustos"),
+        {
+            type: "bar",
+            data: {
+                labels: substituicoes.map(item => item.local),
+                datasets: [
+                    {
+                        label: "Convencional (custo evitado)",
+                        data: substituicoes.map(custoConvencional),
+                        backgroundColor: "#9e9e9e"
+                    },
+                    {
+                        label: "Reutilizável (custo amortizado)",
+                        data: substituicoes.map(item => custoAmortizado(item)),
+                        backgroundColor: "#2e7d32"
+                    }
+                ]
+            },
+            options: opcoesComTitulo(
+                "Custo por caminhão em cada local (estimativa)"
+            )
+        }
+    );
+
+    // Gráfico 2: economia acumulada ao longo do ano, por cenário
+    const meses = [];
+    for (let m = 1; m <= mesesAno; m++) {
+        meses.push("Mês " + m);
+    }
+
+    const cenarios = [
+        ["Conservador (50% dos ciclos)", 0.5, "#a5d6a7"],
+        ["Informado (100% dos ciclos)", 1, "#2e7d32"],
+        ["Otimista (150% dos ciclos)", 1.5, "#1b5e20"]
+    ];
+
+    graficoProjecao = new Chart(
+        document.querySelector("#graficoProjecao"),
+        {
+            type: "line",
+            data: {
+                labels: meses,
+                datasets: cenarios.map(([nome, fator, cor]) => {
+                    const mensal = economiaMensalCenario(fator);
+
+                    return {
+                        label: nome,
+                        data: meses.map((_, i) => mensal * (i + 1)),
+                        borderColor: cor,
+                        backgroundColor: cor,
+                        tension: 0.2
+                    };
+                })
+            },
+            options: opcoesComTitulo(
+                "Economia acumulada no ano (estimativa)"
+            )
+        }
+    );
 }
 
 // Atualizar os indicadores
@@ -156,6 +398,8 @@ function atualizarPainel() {
         formatarDinheiro(economiaAnual);
 
     atualizarLocais();
+    atualizarAnalise();
+    atualizarGraficos();
 }
 
 // Mostrar locais cadastrados
@@ -171,6 +415,7 @@ function atualizarLocais() {
 
     substituicoes.forEach((item, indice) => {
         const economia = calcularEconomia(item);
+        const equilibrio = ciclosEquilibrio(item);
 
         const linha = document.createElement("div");
         linha.className = "item-local";
@@ -182,8 +427,20 @@ function atualizarLocais() {
         detalhe.textContent =
             "Quantidade: " + item.quantidade +
             " | Ciclos: " + item.ciclos +
+            " | Equilíbrio: " + equilibrio.toFixed(1) + " ciclos" +
             " | Economia por caminhão: " +
             formatarDinheiro(economia);
+
+        // Alerta quando a reutilizável não compensa
+        const alerta = document.createElement("p");
+        alerta.className = "alerta-ciclos";
+        if (item.ciclos <= equilibrio) {
+            alerta.textContent =
+                "Atenção: com " + item.ciclos +
+                " ciclos a reutilizável não gera economia.";
+        } else {
+            alerta.hidden = true;
+        }
 
         // Botão editar
         const editar = document.createElement("button");
@@ -214,12 +471,12 @@ function atualizarLocais() {
         const campoQuantidade =
             formulario.querySelector(".edit-quantidade");
 
-        const campoCiclos =
+        const campoCiclosEdicao =
             formulario.querySelector(".edit-ciclos");
 
         campoLocal.value = item.local;
         campoQuantidade.value = item.quantidade;
-        campoCiclos.value = item.ciclos;
+        campoCiclosEdicao.value = item.ciclos;
 
         // Botão salvar
         const salvar = document.createElement("button");
@@ -229,7 +486,7 @@ function atualizarLocais() {
         salvar.onclick = function () {
             const novoLocal = campoLocal.value.trim();
             const novaQuantidade = Number(campoQuantidade.value);
-            const novosCiclos = Number(campoCiclos.value);
+            const novosCiclos = Number(campoCiclosEdicao.value);
 
             if (
                 !novoLocal ||
@@ -288,6 +545,7 @@ function atualizarLocais() {
         linha.append(
             nome,
             detalhe,
+            alerta,
             editar,
             remover,
             formulario
@@ -323,6 +581,10 @@ botao.addEventListener("click", function () {
         local: local,
         quantidade: quantidade,
         ciclos: ciclos,
+        nomeConvencional:
+            seletores[0].options[modeloConvencional + 1].text,
+        nomeReutilizavel:
+            seletores[1].options[modeloReutilizavel + 1].text,
         precoConvencional:
             modelosConvencionais[modeloConvencional],
         precoReutilizavel:
@@ -359,18 +621,52 @@ document.querySelector("#mesesAno")
         atualizarPainel();
     });
 
-// Exportar relatório CSV
+// ----- Exportação CSV -----
+
+// Texto seguro para CSV: aspas, separador e fórmulas de planilha
+function csvTexto(valor) {
+    let texto = String(valor ?? "");
+
+    if (/^[=+\-@]/.test(texto)) {
+        texto = "'" + texto;
+    }
+
+    if (/[;"\n]/.test(texto)) {
+        texto = '"' + texto.replace(/"/g, '""') + '"';
+    }
+
+    return texto;
+}
+
+// Número no formato brasileiro (vírgula decimal)
+function csvNumero(valor) {
+    return valor.toFixed(2).replace(".", ",");
+}
+
 botaoExportar.addEventListener("click", function () {
-    const linhas = [
-        ["Local", "Quantidade", "Ciclos", "Economia por caminhão"]
-    ];
+    const linhas = [[
+        "Local",
+        "Produto convencional",
+        "Produto reutilizável",
+        "Quantidade",
+        "Preço convencional",
+        "Preço reutilizável",
+        "Ciclos",
+        "Investimento inicial",
+        "Economia por caminhão"
+    ]];
 
     substituicoes.forEach(item => {
         linhas.push([
-            item.local,
+            csvTexto(item.local),
+            csvTexto(item.nomeConvencional || "-"),
+            csvTexto(item.nomeReutilizavel || "-"),
             item.quantidade,
+            csvNumero(item.precoConvencional),
+            csvNumero(item.precoReutilizavel),
             item.ciclos,
-            calcularEconomia(item).toFixed(2)
+            csvNumero(investimentoInicial(item)),
+            csvNumero(calcularEconomia(item))
         ]);
     });
 
@@ -393,5 +689,3 @@ botaoExportar.addEventListener("click", function () {
 
 // Iniciar painel
 atualizarPainel();
-
-
