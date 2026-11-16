@@ -218,3 +218,25 @@ footer {
 .form-edicao[hidden] {
     display: none;
 }
+
+.graficos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.graficos[hidden] {
+    display: none;
+}
+
+.graficos h2 {
+    grid-column: 1 / -1;
+}
+
+.grafico {
+    background: #fff;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    padding: 12px;
+}
+
