@@ -127,6 +127,8 @@ graficos.innerHTML = `
     <h2>Gráficos</h2>
     <div class="grafico"><canvas id="graficoCustos"></canvas></div>
     <div class="grafico"><canvas id="graficoProjecao"></canvas></div>
+    <div class="grafico" id="blocoDivisao"><canvas id="graficoDivisao"></canvas></div>
+    <div class="grafico"><canvas id="graficoEquilibrio"></canvas></div>
 `;
 analise.parentNode.insertBefore(graficos, analise.nextSibling);
 
@@ -253,6 +255,13 @@ function economiaMensalCenario(fator) {
 
 let graficoCustos = null;
 let graficoProjecao = null;
+let graficoDivisao = null;
+let graficoEquilibrio = null;
+
+const coresLocais = [
+    "#1b5e20", "#2e7d32", "#43a047", "#66bb6a",
+    "#81c784", "#a5d6a7", "#558b2f", "#9ccc65"
+];
 
 const opcoesBase = {
     responsive: true,
@@ -304,6 +313,9 @@ async function atualizarGraficos() {
 
     if (graficoCustos) graficoCustos.destroy();
     if (graficoProjecao) graficoProjecao.destroy();
+    if (graficoDivisao) graficoDivisao.destroy();
+    if (graficoEquilibrio) graficoEquilibrio.destroy();
+    graficoDivisao = null;
 
     // Gráfico 1: custo por caminhão em cada local
     graficoCustos = new Chart(
@@ -364,6 +376,98 @@ async function atualizarGraficos() {
             options: opcoesComTitulo(
                 "Economia acumulada no ano (estimativa)"
             )
+        }
+    );
+
+    // Gráfico 3: divisão da economia por local (somente locais com economia positiva)
+    const comEconomia = substituicoes.filter(
+        item => calcularEconomia(item) > 0
+    );
+
+    const blocoDivisao = document.querySelector("#blocoDivisao");
+    blocoDivisao.hidden = comEconomia.length === 0;
+
+    if (comEconomia.length > 0) {
+        graficoDivisao = new Chart(
+            document.querySelector("#graficoDivisao"),
+            {
+                type: "doughnut",
+                data: {
+                    labels: comEconomia.map(item => item.local),
+                    datasets: [{
+                        data: comEconomia.map(item => calcularEconomia(item)),
+                        backgroundColor: comEconomia.map(
+                            (_, i) => coresLocais[i % coresLocais.length]
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: "Divisão da economia por local (estimativa)"
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: contexto =>
+                                    contexto.label + ": " +
+                                    formatarDinheiro(contexto.parsed)
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+    // Gráfico 4: ponto de equilíbrio (economia por caminhão x ciclos)
+    const maiorCiclo = Math.max(...substituicoes.map(item => item.ciclos));
+    const maiorEquilibrio = Math.max(
+        ...substituicoes.map(item => ciclosEquilibrio(item))
+    );
+
+    const limiteCiclos = Math.min(
+        200,
+        Math.max(10, maiorCiclo * 2, Math.ceil(maiorEquilibrio * 2))
+    );
+
+    const ciclosEixo = [];
+    for (let c = 1; c <= limiteCiclos; c++) {
+        ciclosEixo.push(c);
+    }
+
+    graficoEquilibrio = new Chart(
+        document.querySelector("#graficoEquilibrio"),
+        {
+            type: "line",
+            data: {
+                labels: ciclosEixo,
+                datasets: substituicoes.map((item, i) => ({
+                    label: item.local,
+                    data: ciclosEixo.map(c => calcularEconomia(item, c)),
+                    borderColor: coresLocais[i % coresLocais.length],
+                    backgroundColor: coresLocais[i % coresLocais.length],
+                    pointRadius: 0,
+                    tension: 0.2
+                }))
+            },
+            options: {
+                ...opcoesComTitulo(
+                    "Ponto de equilíbrio: economia por caminhão x ciclos"
+                ),
+                scales: {
+                    x: {
+                        title: { display: true, text: "Ciclos de reutilização" }
+                    },
+                    y: {
+                        ticks: {
+                            callback: valor => formatarDinheiro(valor)
+                        }
+                    }
+                }
+            }
         }
     );
 }
