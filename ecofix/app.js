@@ -833,5 +833,34 @@ botaoExportar.addEventListener("click", function () {
     URL.revokeObjectURL(link.href);
 });
 
+// Atualizar todos os indicadores e informações do EcoFix
+function atualizarPainel() {
+    const economiaPorCaminhao = substituicoes.reduce(
+        (total, item) => total + calcularEconomia(item),
+        0
+    );
+
+    const economiaDiaria = economiaPorCaminhao * producaoDiaria;
+    const economiaMensal = economiaDiaria * diasMes;
+    const economiaAnual = economiaMensal * mesesAno;
+
+    indicadores[0].textContent =
+        formatarDinheiro(economiaPorCaminhao);
+
+    indicadores[1].textContent =
+        formatarDinheiro(economiaDiaria);
+
+    indicadores[2].textContent =
+        formatarDinheiro(economiaMensal);
+
+    indicadores[3].textContent =
+        formatarDinheiro(economiaAnual);
+
+    salvarDados();
+    atualizarLocais();
+    atualizarAnalise();
+    atualizarGraficos();
+}
+
 // Iniciar painel
 atualizarPainel();
