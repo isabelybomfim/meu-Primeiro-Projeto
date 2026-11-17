@@ -267,22 +267,55 @@ let graficoProjecao = null;
 let graficoDivisao = null;
 let graficoEquilibrio = null;
 
+
 const coresLocais = [
-    "#1b5e20", "#2e7d32", "#43a047", "#66bb6a",
-    "#81c784", "#a5d6a7", "#558b2f", "#9ccc65"
+    "#001E50",
+    "#005B9A",
+    "#287DB5",
+    "#80B9E0",
+    "#A9CDE8",
+    "#456A91",
+    "#6F8EAE",
+    "#C5D9EA"
 ];
+
 
 const opcoesBase = {
     responsive: true,
     animation: false,
+    color: "#001E50",
+    plugins: {
+        legend: {
+            labels: {
+                color: "#001E50",
+                usePointStyle: true,
+                padding: 18
+            }
+        }
+    },
     scales: {
+        x: {
+            ticks: {
+                color: "#66778B"
+            },
+            grid: {
+                color: "#EAF0F6"
+            }
+        },
         y: {
             ticks: {
+                color: "#66778B",
                 callback: valor => formatarDinheiro(valor)
+            },
+            grid: {
+                color: "#D9E3ED"
             }
         }
     }
 };
+
+
+
 
 function opcoesComTitulo(titulo) {
     return {
@@ -337,12 +370,16 @@ async function atualizarGraficos() {
                     {
                         label: "Convencional (custo evitado)",
                         data: substituicoes.map(custoConvencional),
-                        backgroundColor: "#9e9e9e"
+                        
+backgroundColor: "#80B9E0"
+
                     },
                     {
                         label: "Reutilizável (custo amortizado)",
                         data: substituicoes.map(item => custoAmortizado(item)),
-                        backgroundColor: "#2e7d32"
+                       
+backgroundColor: "#005B9A"
+
                     }
                 ]
             },
@@ -358,11 +395,13 @@ async function atualizarGraficos() {
         meses.push("Mês " + m);
     }
 
-    const cenarios = [
-        ["Conservador (50% dos ciclos)", 0.5, "#a5d6a7"],
-        ["Informado (100% dos ciclos)", 1, "#2e7d32"],
-        ["Otimista (150% dos ciclos)", 1.5, "#1b5e20"]
-    ];
+    
+const cenarios = [
+    ["Conservador (50% dos ciclos)", 0.5, "#80B9E0"],
+    ["Informado (100% dos ciclos)", 1, "#005B9A"],
+    ["Otimista (150% dos ciclos)", 1.5, "#001E50"]
+];
+
 
     graficoProjecao = new Chart(
         document.querySelector("#graficoProjecao"),
@@ -413,8 +452,8 @@ async function atualizarGraficos() {
                 options: {
                     responsive: true,
                     animation: false,
-                    plugins: {
-                        title: {
+                    plugins: {color: "#001E50"
+                        title: {color: "#001E50"
                             display: true,
                             text: "Divisão da economia por local (estimativa)"
                         },
