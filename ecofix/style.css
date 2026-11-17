@@ -1,12 +1,19 @@
 
+/* =====================================
+   ECOFIX — IDENTIDADE AZUL INDUSTRIAL
+   Inspirada na Scania
+===================================== */
+
 :root {
-    --verde-escuro: #173B35;
-    --verde: #639879;
-    --verde-claro: #B8D9A7;
-    --fundo: #F1F5F2;
+    --azul-escuro: #001E50;
+    --azul: #005B9A;
+    --azul-claro: #80B9E0;
+    --azul-suave: #EAF0F6;
+    --fundo: #F3F6FA;
     --branco: #FFFFFF;
-    --texto: #19352E;
-    --cinza: #65756D;
+    --texto: #172B45;
+    --cinza: #66778B;
+    --borda: #D9E3ED;
 }
 
 * {
@@ -23,7 +30,7 @@ body {
 /* CABEÇALHO */
 
 .cabecalho {
-    background: var(--verde-escuro);
+    background: var(--azul-escuro);
     color: white;
     padding: 25px 6%;
     display: flex;
@@ -31,15 +38,18 @@ body {
     align-items: center;
     flex-wrap: wrap;
     gap: 15px;
+    box-shadow: 0 4px 14px #001E5020;
 }
 
 .logo h1 {
     font-size: 32px;
     margin: 0;
+    font-weight: 800;
+    letter-spacing: 1px;
 }
 
 .logo span {
-    color: var(--verde-claro);
+    color: var(--azul-claro);
     font-size: 11px;
     letter-spacing: 2px;
 }
@@ -59,10 +69,12 @@ body {
 .boas-vindas h2 {
     font-size: 28px;
     margin-bottom: 8px;
+    color: var(--azul-escuro);
 }
 
 .boas-vindas p {
     color: var(--cinza);
+    line-height: 1.6;
 }
 
 /* INDICADORES */
@@ -78,8 +90,14 @@ body {
     background: var(--branco);
     padding: 22px;
     border-radius: 12px;
-    border: 1px solid #DCE7DF;
-    box-shadow: 0 3px 10px #173B3510;
+    border: 1px solid var(--borda);
+    box-shadow: 0 4px 14px #001E500A;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 18px #001E5018;
 }
 
 .card h3 {
@@ -88,12 +106,12 @@ body {
 }
 
 .card p {
-    color: var(--verde-escuro);
+    color: var(--azul);
     font-size: 25px;
     font-weight: bold;
 }
 
-/* FORMULÁRIO */
+/* FORMULÁRIOS E LOCAIS */
 
 .cadastro,
 .locais {
@@ -101,40 +119,48 @@ body {
     padding: 25px;
     border-radius: 12px;
     margin-top: 20px;
-    border: 1px solid #DCE7DF;
+    border: 1px solid var(--borda);
+    box-shadow: 0 3px 12px #001E5008;
 }
 
 .cadastro h2,
 .locais h2 {
-    color: var(--verde-escuro);
+    color: var(--azul-escuro);
 }
+
+/* CAMPOS */
 
 label {
     display: block;
     font-weight: bold;
     margin-top: 15px;
     margin-bottom: 6px;
+    color: var(--texto);
 }
 
 input,
 select {
     width: 100%;
     padding: 12px;
-    border: 1px solid #BDCDC3;
+    border: 1px solid #BDCDDE;
     border-radius: 8px;
     font-size: 14px;
     background: white;
+    color: var(--texto);
+    transition: border 0.2s, box-shadow 0.2s;
 }
 
 input:focus,
 select:focus {
-    outline: 2px solid var(--verde);
+    outline: none;
+    border-color: var(--azul);
+    box-shadow: 0 0 0 3px #005B9A20;
 }
 
-/* BOTÃO */
+/* BOTÕES */
 
 button {
-    background: var(--verde-escuro);
+    background: var(--azul-escuro);
     color: white;
     border: none;
     padding: 13px 20px;
@@ -142,10 +168,78 @@ button {
     margin-top: 20px;
     font-weight: bold;
     cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
 }
 
 button:hover {
-    background: var(--verde);
+    background: var(--azul);
+    transform: translateY(-1px);
+}
+
+button:focus-visible {
+    outline: 3px solid var(--azul-claro);
+    outline-offset: 3px;
+}
+
+/* EDIÇÃO DE CADASTROS */
+
+.item-local {
+    padding: 15px 0;
+    border-bottom: 1px solid var(--borda);
+}
+
+.item-local:last-child {
+    border-bottom: none;
+}
+
+.form-edicao {
+    background: var(--azul-suave);
+    padding: 18px;
+    margin-top: 15px;
+    border-radius: 10px;
+}
+
+.form-edicao h3 {
+    color: var(--azul-escuro);
+    margin-top: 0;
+}
+
+.form-edicao button {
+    margin-right: 8px;
+}
+
+.form-edicao button:last-child {
+    background: var(--cinza);
+}
+
+.form-edicao[hidden] {
+    display: none;
+}
+
+/* GRÁFICOS */
+
+.graficos {
+    display: grid;
+    grid-template-columns:
+        repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.graficos[hidden] {
+    display: none;
+}
+
+.graficos h2 {
+    grid-column: 1 / -1;
+    color: var(--azul-escuro);
+}
+
+.grafico {
+    background: var(--branco);
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 3px 12px #001E5008;
 }
 
 /* RODAPÉ */
@@ -157,13 +251,15 @@ footer {
     font-size: 13px;
 }
 
-/* TABLET E CELULAR */
+/* TABLETS */
 
 @media (max-width: 800px) {
     .indicadores {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* CELULARES */
 
 @media (max-width: 500px) {
     .indicadores {
@@ -181,62 +277,13 @@ footer {
     .container {
         margin-top: 20px;
     }
+
+    .cadastro,
+    .locais {
+        padding: 18px;
+    }
+
+    .graficos {
+        grid-template-columns: 1fr;
+    }
 }
-
-
-/* FORMULÁRIO DE EDIÇÃO */
-
-.item-local {
-    padding: 15px 0;
-    border-bottom: 1px solid #DCE7DF;
-}
-
-.item-local:last-child {
-    border-bottom: none;
-}
-
-.form-edicao {
-    background: #F1F5F2;
-    padding: 18px;
-    margin-top: 15px;
-    border-radius: 10px;
-}
-
-.form-edicao h3 {
-    color: #173B35;
-    margin-top: 0;
-}
-
-.form-edicao button {
-    margin-right: 8px;
-}
-
-.form-edicao button:last-child {
-    background: #65756D;
-}
-
-.form-edicao[hidden] {
-    display: none;
-}
-
-.graficos {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 16px;
-}
-
-.graficos[hidden] {
-    display: none;
-}
-
-.graficos h2 {
-    grid-column: 1 / -1;
-}
-
-.grafico {
-    background: #fff;
-    border: 1px solid #c8e6c9;
-    border-radius: 8px;
-    padding: 12px;
-}
-
