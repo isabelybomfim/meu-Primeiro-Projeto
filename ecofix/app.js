@@ -449,23 +449,31 @@ const cenarios = [
                         )
                     }]
                 },
-                options: {
-                    responsive: true,
-                    animation: false,
-                    plugins: {color: "#001E50"
-                        title: {color: "#001E50"
-                            display: true,
-                            text: "Divisão da economia por local (estimativa)"
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: contexto =>
-                                    contexto.label + ": " +
-                                    formatarDinheiro(contexto.parsed)
-                            }
-                        }
-                    }
-                }
+               
+options: {
+    responsive: true,
+    animation: false,
+    plugins: {
+        title: {
+            display: true,
+            text: "Divisão da economia por local (estimativa)",
+            color: "#001E50"
+        },
+        tooltip: {
+            callbacks: {
+                label: contexto =>
+                    contexto.label + ": " +
+                    formatarDinheiro(contexto.parsed)
+            }
+        },
+        legend: {
+            labels: {
+                color: "#001E50"
+            }
+        }
+    }
+}
+
             }
         );
     }
