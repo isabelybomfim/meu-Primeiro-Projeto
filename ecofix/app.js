@@ -1,4 +1,4 @@
-// ======================================
+y// ======================================
 // ECOFIX - CALCULADORA DE ECONOMIA (v2)
 // ======================================
 
@@ -476,41 +476,7 @@ async function atualizarGraficos() {
     );
 }
 
-// Atualizar os indicadores
-function atualizarPainel() {
-    salvarDados();
-    const economiaTotal = substituicoes.reduce(
-        (total, item) => total + calcularEconomia(item),
-        0
-    );
 
-    const economiaDiaria =
-        economiaTotal * producaoDiaria;
-
-    const economiaMensal =
-        economiaDiaria * diasMes;
-
-    const economiaAnual =
-        economiaMensal * mesesAno;
-
-    indicadores[0].textContent =
-        formatarDinheiro(economiaTotal);
-
-    indicadores[1].textContent =
-        formatarDinheiro(economiaDiaria);
-
-    indicadores[2].textContent =
-        formatarDinheiro(economiaMensal);
-
-    indicadores[3].textContent =
-        formatarDinheiro(economiaAnual);
-
-    atualizarLocais();
-    atualizarAnalise();
-    atualizarGraficos();
-}
-
-// Mostrar locais cadastrados
 
 function atualizarLocais() {
     listaLocais.innerHTML = "<h2>Locais cadastrados</h2>";
@@ -533,29 +499,30 @@ function atualizarLocais() {
 
         const detalhe = document.createElement("p");
         detalhe.textContent =
-            "Quantidade: " + item.quantidade +
+            "Produto convencional: " + item.nomeConvencional +
+            " | Produto reutilizável: " + item.nomeReutilizavel +
+            " | Quantidade: " + item.quantidade +
             " | Ciclos: " + item.ciclos +
-            " | Equilíbrio: " + equilibrio.toFixed(1) + " ciclos" +
             " | Economia por caminhão: " +
             formatarDinheiro(economia);
 
-        // Alerta quando a reutilizável não compensa
         const alerta = document.createElement("p");
-        alerta.className = "alerta-ciclos";
+
         if (item.ciclos <= equilibrio) {
             alerta.textContent =
-                "Atenção: com " + item.ciclos +
-                " ciclos a reutilizável não gera economia.";
+                "Atenção: os ciclos informados ainda não geram economia positiva.";
         } else {
             alerta.hidden = true;
         }
 
-        // Botão editar
         const editar = document.createElement("button");
         editar.textContent = "Editar";
         editar.type = "button";
 
-        // Formulário de edição
+        const remover = document.createElement("button");
+        remover.textContent = "Remover";
+        remover.type = "button";
+
         const formulario = document.createElement("div");
         formulario.className = "form-edicao";
         formulario.hidden = true;
@@ -566,44 +533,79 @@ function atualizarLocais() {
             <label>Local de aplicação</label>
             <input class="edit-local" type="text">
 
+            <label>Modelo convencional</label>
+            <select class="edit-convencional"></select>
+
+            <label>Modelo reutilizável</label>
+            <select class="edit-reutilizavel"></select>
+
             <label>Quantidade por caminhão</label>
-            <input class="edit-quantidade" type="number" min="1">
+            <input class="edit-quantidade" type="number" min="1" step="1">
 
             <label>Ciclos estimados de reutilização</label>
-            <input class="edit-ciclos" type="number" min="1">
+            <input class="edit-ciclos" type="number" min="1" step="1">
         `;
 
         const campoLocal =
             formulario.querySelector(".edit-local");
 
+        const campoConvencional =
+            formulario.querySelector(".edit-convencional");
+
+        const campoReutilizavel =
+            formulario.querySelector(".edit-reutilizavel");
+
         const campoQuantidade =
             formulario.querySelector(".edit-quantidade");
 
-        const campoCiclosEdicao =
+        const campoCiclos =
             formulario.querySelector(".edit-ciclos");
 
-        campoLocal.value = item.local;
-        campoQuantidade.value = item.quantidade;
-        campoCiclosEdicao.value = item.ciclos;
+        // Copiar as opções dos produtos do cadastro original
+        seletores[0].querySelectorAll("option").forEach(opcao => {
+            campoConvencional.appendChild(opcao.cloneNode(true));
+        });
 
-        // Botão salvar
+        seletores[1].querySelectorAll("option").forEach(opcao => {
+            campoReutilizavel.appendChild(opcao.cloneNode(true));
+        });
+
+        // Preencher os dados atuais
+        campoLocal.value = item.local;
+        campoConvencional.value = item.nomeConvencional;
+        campoReutilizavel.value = item.nomeReutilizavel;
+        campoQuantidade.value = item.quantidade;
+        campoCiclos.value = item.ciclos;
+
         const salvar = document.createElement("button");
         salvar.textContent = "Salvar alterações";
         salvar.type = "button";
 
+        const cancelar = document.createElement("button");
+        cancelar.textContent = "Cancelar";
+        cancelar.type = "button";
+
         salvar.onclick = function () {
             const novoLocal = campoLocal.value.trim();
             const novaQuantidade = Number(campoQuantidade.value);
-            const novosCiclos = Number(campoCiclosEdicao.value);
+            const novosCiclos = Number(campoCiclos.value);
+
+            const indiceConvencional =
+                campoConvencional.selectedIndex - 1;
+
+            const indiceReutilizavel =
+                campoReutilizavel.selectedIndex - 1;
 
             if (
                 !novoLocal ||
                 !Number.isInteger(novaQuantidade) ||
                 novaQuantidade <= 0 ||
                 !Number.isInteger(novosCiclos) ||
-                novosCiclos <= 0
+                novosCiclos <= 0 ||
+                indiceConvencional < 0 ||
+                indiceReutilizavel < 0
             ) {
-                alert("Preencha os campos corretamente.");
+                alert("Preencha todos os campos corretamente.");
                 return;
             }
 
@@ -611,33 +613,37 @@ function atualizarLocais() {
                 ...item,
                 local: novoLocal,
                 quantidade: novaQuantidade,
-                ciclos: novosCiclos
+                ciclos: novosCiclos,
+
+                nomeConvencional:
+                    campoConvencional.options[
+                        campoConvencional.selectedIndex
+                    ].text,
+
+                nomeReutilizavel:
+                    campoReutilizavel.options[
+                        campoReutilizavel.selectedIndex
+                    ].text,
+
+                precoConvencional:
+                    modelosConvencionais[indiceConvencional],
+
+                precoReutilizavel:
+                    modelosReutilizaveis[indiceReutilizavel]
             };
 
             atualizarPainel();
         };
-
-        // Botão cancelar
-        const cancelar = document.createElement("button");
-        cancelar.textContent = "Cancelar";
-        cancelar.type = "button";
 
         cancelar.onclick = function () {
             formulario.hidden = true;
             editar.hidden = false;
         };
 
-        formulario.append(salvar, cancelar);
-
         editar.onclick = function () {
             formulario.hidden = false;
             editar.hidden = true;
         };
-
-        // Botão remover
-        const remover = document.createElement("button");
-        remover.textContent = "Remover";
-        remover.type = "button";
 
         remover.onclick = function () {
             const confirmar = confirm(
@@ -649,6 +655,8 @@ function atualizarLocais() {
                 atualizarPainel();
             }
         };
+
+        formulario.append(salvar, cancelar);
 
         linha.append(
             nome,
@@ -662,6 +670,7 @@ function atualizarLocais() {
         listaLocais.appendChild(linha);
     });
 }
+
 
 // Adicionar substituição
 botao.addEventListener("click", function () {
