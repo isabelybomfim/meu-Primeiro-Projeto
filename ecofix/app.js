@@ -1,4 +1,4 @@
-y// ======================================
+// ======================================
 // ECOFIX - CALCULADORA DE ECONOMIA (v2)
 // ======================================
 
@@ -169,6 +169,11 @@ function investimentoInicial(item) {
 // Ciclos mínimos para a reutilizável empatar com a convencional
 function ciclosEquilibrio(item) {
     return item.precoReutilizavel / item.precoConvencional;
+}
+
+// Quantidade inteira mínima para gerar economia positiva
+function ciclosMinimosEconomia(item) {
+    return Math.floor(ciclosEquilibrio(item)) + 1;
 }
 
 // Economia anual para um fator aplicado aos ciclos (cenários)
