@@ -87,14 +87,18 @@ configuracao.className = "cadastro";
 
 configuracao.innerHTML = `
     <h2>Produção</h2>
+
     <label>Caminhões produzidos por dia</label>
-    <input id="producao" type="number" min="0" value="30">
+    <input id="producao" type="number"
+        min="0" step="1" value="30">
 
     <label>Dias produtivos por mês</label>
-    <input id="diasMes" type="number" min="0" max="31" value="22">
+    <input id="diasMes" type="number"
+        min="0" max="31" step="1" value="22">
 
     <label>Meses produtivos por ano</label>
-    <input id="mesesAno" type="number" min="0" max="12" value="12">
+    <input id="mesesAno" type="number"
+        min="0" max="12" step="1" value="12">
 `;
 
 cadastro.parentNode.insertBefore(configuracao, cadastro);
@@ -706,24 +710,46 @@ botao.addEventListener("click", function () {
     campoCiclos.value = 20;
 });
 
-// Alterar produção
+// Validar e atualizar os parâmetros de produção
+function validarProducao(campo, maximo = Infinity) {
+    let valor = Number(campo.value);
+
+    if (!Number.isFinite(valor) || valor < 0) {
+        valor = 0;
+    }
+
+    valor = Math.floor(valor);
+
+    if (valor > maximo) {
+        valor = maximo;
+    }
+
+    campo.value = valor;
+
+    return valor;
+}
+
+// Alterar produção diária
 document.querySelector("#producao")
-    .addEventListener("input", function () {
-        producaoDiaria = Math.max(0, Number(this.value) || 0);
+    .addEventListener("change", function () {
+        producaoDiaria = validarProducao(this);
         atualizarPainel();
     });
 
+// Alterar dias produtivos
 document.querySelector("#diasMes")
-    .addEventListener("input", function () {
-        diasMes = Math.max(0, Number(this.value) || 0);
+    .addEventListener("change", function () {
+        diasMes = validarProducao(this, 31);
         atualizarPainel();
     });
 
+// Alterar meses produtivos
 document.querySelector("#mesesAno")
-    .addEventListener("input", function () {
-        mesesAno = Math.max(0, Number(this.value) || 0);
+    .addEventListener("change", function () {
+        mesesAno = validarProducao(this, 12);
         atualizarPainel();
     });
+
 
 // ----- Exportação CSV -----
 
