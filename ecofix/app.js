@@ -509,8 +509,10 @@ function atualizarLocais() {
             " | Quantidade: " + item.quantidade +
             " | Ciclos: " + item.ciclos +
             " | Economia por caminhão: " +
-            formatarDinheiro(economia);
-
+                formatarDinheiro(economia) +
+            " | Mínimo para economia positiva: " +
+                ciclosMinimosEconomia(item) + " ciclos";
+           
         const alerta = document.createElement("p");
 
         if (item.ciclos <= equilibrio) {
