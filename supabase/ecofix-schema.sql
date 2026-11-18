@@ -73,3 +73,23 @@ using ((select private.is_ecofix_admin()));
 insert into public.ecofix_state (id)
 values (1)
 on conflict (id) do nothing;
+
+ 
+-- Função pública segura para o frontend identificar se a sessão é administradora.
+-- A tabela ecofix_admins continua sem acesso direto para visitantes.
+create or replace function public.is_ecofix_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+    select exists (
+        select 1
+        from public.ecofix_admins a
+        where a.user_id = (select auth.uid())
+    );
+$$;
+
+revoke all on function public.is_ecofix_admin() from public;
+grant execute on function public.is_ecofix_admin() to authenticated;
