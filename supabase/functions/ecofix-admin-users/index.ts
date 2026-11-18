@@ -23,8 +23,8 @@ Deno.serve(async (req) => {
   const {data:callerData,error:callerError}=await callerClient.auth.getUser(token);
   if(callerError||!callerData.user) return response({error:"Sessão inválida. Entre novamente."},401);
   const adminClient=createClient(supabaseUrl,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
-  const {data:adminRow,error:adminError}=await adminClient.from("ecofix_admins").select("user_id").eq("user_id",callerData.user.id).maybeSingle();
-  if(adminError||!adminRow) return response({error:"Apenas a administradora pode gerenciar usuários."},403);
+  const {data:isAdmin,error:adminCheckError}=await callerClient.rpc("is_ecofix_admin");
+  if(adminCheckError||isAdmin!==true) return response({error:"Apenas a administradora pode gerenciar usuários."},403);
   let body:{action?:string;name?:string;email?:string;password?:string};
   try{body=await req.json();}catch{return response({error:"Solicitação inválida."},400);}
   if(body.action==="list"){
