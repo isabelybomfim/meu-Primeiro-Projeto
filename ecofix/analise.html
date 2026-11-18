@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFix | Análise complementar</title>
+    <link rel="stylesheet" href="style.css?v=ecofix-analise-1">
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="logo"><h1>EcoFix</h1><span>ECONOMIA INDUSTRIAL</span></div>
+        <p>Análise detalhada dos resultados.</p>
+        <nav class="navegacao-principal" aria-label="Navegação principal">
+            <a href="index.html">Painel</a>
+            <a href="analise.html" aria-current="page">Análise complementar</a>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="boas-vindas">
+            <h2>Análise complementar</h2>
+            <p>Investimento, cenários de economia e indicadores de equilíbrio das substituições cadastradas.</p>
+            <p id="analise-status" role="status">Carregando dados compartilhados...</p>
+        </section>
+        <section id="analise-resumo" class="indicadores"></section>
+        <section class="analise-detalhada">
+            <h2>Cenários de economia anual</h2>
+            <div id="analise-cenarios" class="cenarios-grid"></div>
+            <p class="aviso-estimativa">Os resultados são estimativas calculadas com os preços e parâmetros cadastrados. Os ciclos de reutilização são estimativas ajustáveis, não dados operacionais confirmados. Custos de inspeção, limpeza e recuperação ainda não estão incluídos.</p>
+        </section>
+        <section class="graficos analise-graficos">
+            <h2>Gráficos de análise</h2>
+            <div class="grafico"><canvas id="graficoCustos"></canvas></div>
+            <div class="grafico"><canvas id="graficoProjecao"></canvas></div>
+            <div class="grafico" id="blocoDivisao"><canvas id="graficoDivisao"></canvas></div>
+            <div class="grafico"><canvas id="graficoEquilibrio"></canvas></div>
+        </section>
+        <section class="locais">
+            <h2>Detalhamento por local</h2>
+            <div id="analise-detalhes"></div>
+        </section>
+    </main>
+    <footer><p>EcoFix © 2026 | Projeto de Engenharia</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js?v=ecofix-analise-1"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="analise.js?v=ecofix-analise-1"></script>
+</body>
+</html>
