@@ -44,6 +44,9 @@ function carregarDados() {
             // Migração única: substitui os preços antigos de demonstração
             // pelos preços informados, sem apagar locais, quantidades ou ciclos.
             if ((dados.versaoDados || 1) < 2) {
+                // Atualiza também o parâmetro antigo de 30 para os 88 informados.
+                producaoDiaria = 88;
+
                 substituicoes = substituicoes.map(item => ({
                     ...item,
                     nomeConvencional: "Fita Tyton convencional",
