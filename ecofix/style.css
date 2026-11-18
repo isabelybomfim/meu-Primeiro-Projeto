@@ -368,3 +368,285 @@ button:disabled, input:disabled, select:disabled { opacity:.6; cursor:not-allowe
     .navegacao-principal { order:3; width:100%; }
     .admin-panel { margin-left:0; }
 }
+
+
+/* ==========================================
+   ECOFIX UI — Bootstrap 5 + identidade visual
+   ========================================== */
+:root {
+    --azul-escuro: #102b4e;
+    --azul: #1769aa;
+    --azul-claro: #9bc8e8;
+    --azul-suave: #edf4fa;
+    --fundo: #f4f7fb;
+    --branco: #ffffff;
+    --texto: #1d2d3f;
+    --cinza: #64748b;
+    --borda: #e2e8f0;
+    --eco-verde: #15966a;
+    --eco-verde-claro: #e8f6f0;
+    --sombra: 0 10px 30px rgba(16, 43, 78, .07);
+}
+html { scroll-behavior: smooth; }
+body {
+    min-height: 100vh;
+    font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--fundo);
+    color: var(--texto);
+    -webkit-font-smoothing: antialiased;
+}
+.cabecalho {
+    position: relative;
+    padding: 20px max(5%, calc((100% - 1180px) / 2));
+    min-height: 104px;
+    background: linear-gradient(115deg, #102b4e 0%, #153e68 68%, #1769aa 100%);
+    box-shadow: 0 8px 24px rgba(16,43,78,.16);
+    gap: 18px 28px;
+}
+.logo h1 { font-size: 30px; letter-spacing: -.8px; }
+.logo span { color: #b9d9ef; font-size: 10px; font-weight: 700; letter-spacing: 2.4px; }
+.cabecalho > p { margin: 0; color: #d8e7f3; font-size: 14px; }
+.navegacao-principal { gap: 6px; }
+.navegacao-principal a {
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    color: #eaf3fb;
+    font-size: 13px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+.navegacao-principal a:hover,
+.navegacao-principal a[aria-current="page"] {
+    color: #fff;
+    background: rgba(255,255,255,.13);
+    border-color: rgba(255,255,255,.12);
+}
+.admin-icon { width: 42px; height: 42px; border-color: rgba(255,255,255,.38); }
+.container {
+    width: min(100% - 32px, 1180px);
+    max-width: 1180px;
+    margin: 34px auto 56px;
+    padding: 0;
+}
+.boas-vindas {
+    padding: 30px 32px;
+    margin-bottom: 24px;
+    border: 1px solid #e2eaf2;
+    border-radius: 18px;
+    background: linear-gradient(120deg, #fff 0%, #f2f8fc 100%);
+    box-shadow: var(--sombra);
+}
+.boas-vindas h2 {
+    margin: 0 0 9px;
+    color: var(--azul-escuro);
+    font-size: clamp(25px, 3vw, 32px);
+    font-weight: 750;
+    letter-spacing: -.8px;
+}
+.boas-vindas p { max-width: 780px; margin: 0; color: var(--cinza); line-height: 1.65; }
+#analise-status {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 16px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--eco-verde-claro);
+    color: #16734f;
+    font-size: 12px;
+    font-weight: 650;
+}
+.indicadores {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(205px, 1fr) );
+    gap: 16px;
+    margin: 22px 0 26px;
+}
+.indicadores .card {
+    position: relative;
+    min-width: 0;
+    padding: 22px 22px 20px;
+    overflow: hidden;
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--sombra);
+}
+.indicadores .card::before {
+    position: absolute;
+    top: 0; left: 0;
+    width: 4px; height: 100%;
+    background: var(--eco-verde);
+    content: "";
+}
+.card h3 {
+    margin: 0 0 12px;
+    color: var(--cinza);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .35px;
+    text-transform: uppercase;
+}
+.card p {
+    margin: 0;
+    color: var(--azul-escuro);
+    font-size: clamp(21px, 2.4vw, 28px);
+    font-weight: 750;
+    letter-spacing: -.7px;
+    overflow-wrap: anywhere;
+}
+.analise-detalhada, .graficos, .locais, .cadastro {
+    margin-top: 22px;
+    padding: 26px;
+    border: 1px solid var(--borda);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--sombra);
+}
+.analise-detalhada h2, .graficos > h2, .locais h2, .cadastro h2 {
+    margin: 0 0 20px;
+    color: var(--azul-escuro);
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -.25px;
+}
+.cenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+}
+.cenario-card {
+    padding: 20px;
+    border: 1px solid #dcebe4;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #f4fbf7, #fff);
+}
+.cenario-card h3 { margin: 0 0 12px; color: #315c4a; font-size: 13px; font-weight: 700; }
+.cenario-card p { margin: 0 0 8px; color: var(--eco-verde); font-size: 22px; font-weight: 750; }
+.cenario-card small, .aviso-estimativa { color: var(--cinza); line-height: 1.6; }
+.aviso-estimativa {
+    margin: 18px 0 0;
+    padding: 13px 16px;
+    border-left: 3px solid #d9a441;
+    border-radius: 8px;
+    background: #fff9eb;
+    font-size: 12px;
+}
+.graficos { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 18px; }
+.graficos > h2 { grid-column: 1 / -1; margin-bottom: 0; }
+.grafico {
+    min-width: 0;
+    min-height: 270px;
+    padding: 18px;
+    border: 1px solid var(--borda);
+    border-radius: 14px;
+    background: #fff;
+}
+.grafico canvas { max-width: 100%; }
+.item-local {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--borda);
+}
+.item-local:last-child { border-bottom: 0; }
+.item-local strong { color: var(--azul-escuro); font-size: 15px; }
+.item-local p { margin: 7px 0 0; color: var(--cinza); line-height: 1.6; font-size: 13px; }
+.form-edicao {
+    padding: 20px;
+    border: 1px solid #dce7f1;
+    border-radius: 14px;
+    background: #f6f9fc;
+}
+label {
+    display: block;
+    margin: 14px 0 7px;
+    color: #34465b;
+    font-size: 13px;
+    font-weight: 650;
+}
+input, select, textarea {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--texto);
+    font: inherit;
+    font-size: 14px;
+    transition: border-color .18s, box-shadow .18s;
+}
+input:focus, select:focus, textarea:focus {
+    outline: 0;
+    border-color: #5a9bd0;
+    box-shadow: 0 0 0 .22rem rgba(23,105,170,.13);
+}
+button {
+    min-height: 40px;
+    margin: 14px 8px 0 0;
+    padding: 10px 17px;
+    border: 1px solid var(--azul-escuro);
+    border-radius: 10px;
+    background: var(--azul-escuro);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    transition: transform .18s, background .18s, box-shadow .18s;
+}
+button:hover {
+    transform: translateY(-1px);
+    background: #1a5688;
+    box-shadow: 0 5px 12px rgba(16,43,78,.13);
+}
+button:disabled { opacity: .5; box-shadow: none; }
+#ef-login-panel {
+    padding: 24px;
+    border: 1px solid var(--borda);
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: var(--sombra);
+}
+#ef-login { margin-top: 12px; }
+#ef-auth-status { margin: 12px 0; color: var(--cinza); font-size: 13px; }
+#ef-manage-link { color: var(--azul); font-size: 13px; }
+#ecofix-status {
+    width: min(100% - 32px, 1180px);
+    max-width: 1180px;
+    margin: 14px auto 0;
+    padding: 10px 14px;
+    border: 1px solid #dbe8f1;
+    border-radius: 10px;
+    background: #fff;
+    color: var(--cinza);
+    font-size: 12px;
+}
+footer {
+    margin-top: 45px;
+    padding: 25px 16px;
+    border-top: 1px solid var(--borda);
+    background: #fff;
+    color: #718096;
+    font-size: 12px;
+}
+@media (max-width: 850px) {
+    .cabecalho { padding: 18px 24px; }
+    .cabecalho > p { flex-basis: 100%; order: 2; }
+    .navegacao-principal { order: 3; flex-wrap: wrap; }
+    .admin-icon { margin-left: auto; }
+    .graficos { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+    .cabecalho { display: flex; align-items: center; padding: 16px; }
+    .logo h1 { font-size: 26px; }
+    .cabecalho > p { margin: 0; font-size: 12px; }
+    .navegacao-principal { width: 100%; gap: 4px; }
+    .navegacao-principal a { padding: 8px 10px; font-size: 12px; }
+    .admin-icon { position: absolute; top: 17px; right: 16px; }
+    .container { width: calc(100% - 24px); margin: 20px auto 36px; }
+    .boas-vindas { padding: 22px 20px; border-radius: 14px; }
+    .indicadores { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .indicadores .card { padding: 17px 14px; border-radius: 13px; }
+    .card h3 { font-size: 10px; }
+    .card p { font-size: 20px; }
+    .analise-detalhada, .graficos, .locais, .cadastro { padding: 19px; border-radius: 14px; }
+    .graficos { display: grid; }
+    .grafico { min-height: 220px; padding: 12px; }
+}
