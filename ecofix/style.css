@@ -316,3 +316,36 @@ footer {
 #ecofix-status { max-width:1100px; margin:12px auto; padding:10px 20px; font-size:14px; }
 #ef-login[hidden], #ef-logout[hidden], #ef-migrate[hidden], .item-local button[hidden] { display:none; }
 button:disabled, input:disabled, select:disabled { opacity:.6; cursor:not-allowed; }
+
+
+/* Navegação e acesso administrativo */
+.navegacao-principal { display:flex; align-items:center; gap:10px; }
+.navegacao-principal a { color:#fff; text-decoration:none; padding:10px 14px; border-radius:8px; font-weight:bold; }
+.navegacao-principal a:hover, .navegacao-principal a[aria-current="page"] { background:#ffffff20; }
+.admin-icon { margin:0; width:44px; height:44px; padding:10px; border:1px solid #ffffff66; border-radius:50%; background:transparent; display:grid; place-items:center; flex:0 0 auto; }
+.admin-icon:hover { background:#ffffff20; }
+.admin-icon svg { width:22px; height:22px; fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.admin-panel[hidden] { display:none; }
+.admin-panel { position:relative; max-width:520px; margin:20px 0 24px auto; }
+.admin-panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.admin-panel-head h2 { margin:0; }
+.admin-close { margin:0; padding:4px 12px; font-size:24px; background:var(--cinza); }
+#ef-auth-status { color:var(--cinza); }
+@media (max-width:700px) {
+ .cabecalho { align-items:flex-start; }
+ .navegacao-principal { order:3; width:100%; }
+ .admin-icon { position:absolute; top:20px; right:6%; }
+ .cabecalho { position:relative; padding-right:70px; }
+ .admin-panel { margin-left:0; }
+}
+
+/* Página independente de análise complementar */
+.analise-detalhada { background:#fff; border:1px solid var(--borda); border-radius:12px; padding:24px; margin:20px 0; }
+.analise-detalhada h2 { color:var(--azul-escuro); margin-top:0; }
+.cenarios-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:14px; }
+.cenario-card { background:var(--azul-suave); border:1px solid var(--borda); border-radius:10px; padding:18px; }
+.cenario-card h3 { margin-top:0; color:var(--azul-escuro); }
+.cenario-card p { font-size:22px; font-weight:bold; color:var(--azul); }
+.cenario-card small,.aviso-estimativa { color:var(--cinza); line-height:1.6; }
+.aviso-equilibrio { color:#9a4b00; font-weight:bold; }
+.analise-graficos { margin:20px 0; }
