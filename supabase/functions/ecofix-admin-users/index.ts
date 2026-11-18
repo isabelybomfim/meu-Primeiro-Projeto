@@ -9,21 +9,20 @@ Deno.serve(async (req) => {
   const authHeader=req.headers.get("Authorization");
   if(!authHeader?.startsWith("Bearer ")) return response({error:"Faça login como administradora."},401);
   const supabaseUrl=Deno.env.get("SUPABASE_URL");
-  let publishableKey:string, secretKey:string;
+  let publishableKey:string, serviceRoleKey:string;
   try {
     const publishableKeys=JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS")||"{}");
-    const secretKeys=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}");
     publishableKey=publishableKeys.default;
-    secretKey=secretKeys.default;
+    serviceRoleKey=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
   } catch {
     return response({error:"Não foi possível ler as chaves padrão do Supabase."},500);
   }
-  if(!supabaseUrl||!publishableKey||!secretKey) return response({error:"Configuração segura da função incompleta."},500);
+  if(!supabaseUrl||!publishableKey||!serviceRoleKey) return response({error:"Configuração segura da função incompleta."},500);
   const token=authHeader.slice(7);
   const callerClient=createClient(supabaseUrl,publishableKey,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false}});
   const {data:callerData,error:callerError}=await callerClient.auth.getUser(token);
   if(callerError||!callerData.user) return response({error:"Sessão inválida. Entre novamente."},401);
-  const adminClient=createClient(supabaseUrl,secretKey,{auth:{persistSession:false,autoRefreshToken:false}});
+  const adminClient=createClient(supabaseUrl,serviceRoleKey,{auth:{persistSession:false,autoRefreshToken:false}});
   const {data:adminRow,error:adminError}=await adminClient.from("ecofix_admins").select("user_id").eq("user_id",callerData.user.id).maybeSingle();
   if(adminError||!adminRow) return response({error:"Apenas a administradora pode gerenciar usuários."},403);
   let body:{action?:string;name?:string;email?:string;password?:string};
