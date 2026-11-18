@@ -40,6 +40,22 @@
             <button type="button">Adicionar substituição</button>
         </section>
         <section class="locais"><h2>Locais cadastrados</h2><p>Nenhuma substituição cadastrada.</p></section>
+        <section id="ef-user-management" class="cadastro ef-user-management" hidden>
+            <h2>Gerenciar usuários</h2>
+            <p>Somente a administradora pode cadastrar novos acessos. Os usuários criados terão permissão de visualização.</p>
+            <form id="ef-create-user-form">
+                <label for="ef-new-name">Nome completo</label>
+                <input id="ef-new-name" type="text" autocomplete="name" required>
+                <label for="ef-new-email">E-mail de acesso</label>
+                <input id="ef-new-email" type="email" autocomplete="email" required>
+                <label for="ef-new-password">Senha inicial (mínimo de 8 caracteres)</label>
+                <input id="ef-new-password" type="password" minlength="8" autocomplete="new-password" required>
+                <button type="submit">Cadastrar usuário</button>
+            </form>
+            <p id="ef-user-status" role="status">Cadastre usuários para liberar o acesso ao EcoFix.</p>
+            <div class="ef-user-list-head"><h3>Usuários cadastrados</h3><button type="button" id="ef-refresh-users">Atualizar lista</button></div>
+            <div id="ef-users-list">Entre como administradora para consultar os usuários.</div>
+        </section>
     </main>
     <footer><p>EcoFix © 2026 | Projeto de Engenharia</p></footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -47,6 +63,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js?v=ecofix-home-4"></script>
-    <script src="app.js?v=excel-completo-1"></script>
+    <script src="app.js?v=usuarios-1"></script>
 </body>
 </html>
