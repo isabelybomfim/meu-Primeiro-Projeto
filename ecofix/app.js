@@ -927,5 +927,25 @@ function atualizarPainel() {
     atualizarGraficos();
 }
 
-// Iniciar painel
-atualizarPainel();
+let ecofixAdmin=false, ecofixRemoteReady=false, ecofixRemoteEmpty=false, ecofixLocalBackup=null, ecofixClient=null, ecofixApplyingRemote=false;
+const ecofixStatus=document.createElement('p'); ecofixStatus.id='ecofix-status'; document.querySelector('.cabecalho').insertAdjacentElement('afterend',ecofixStatus);
+function ecofixMsg(t){ecofixStatus.textContent=t;}
+function ecofixApply(d){ecofixApplyingRemote=true;substituicoes=Array.isArray(d.substituicoes)?d.substituicoes:[];producaoDiaria=d.producaoDiaria??88;diasMes=d.diasMes??22;mesesAno=d.mesesAno??12;document.querySelector('#producao').value=producaoDiaria;document.querySelector('#diasMes').value=diasMes;document.querySelector('#mesesAno').value=mesesAno;atualizarPainel();ecofixApplyingRemote=false;if(typeof ecofixPermissions==='function')ecofixPermissions();}
+function ecofixPermissions(){cadastro.querySelectorAll('input,select,button').forEach(e=>{if(e!==botaoExportar)e.disabled=!ecofixAdmin;});configuracao.querySelectorAll('input').forEach(e=>e.disabled=!ecofixAdmin);document.querySelectorAll('.item-local button').forEach(e=>{if(['Editar','Remover','Salvar alterações','Cancelar'].includes(e.textContent))e.hidden=!ecofixAdmin;});}
+async function ecofixCheckAdmin(){const {data:{user}}=await ecofixClient.auth.getUser();ecofixAdmin=false;if(user){const {data,error}=await ecofixClient.rpc('is_ecofix_admin');if(!error)ecofixAdmin=data===true;}document.querySelector('#ef-login').hidden=!!user;document.querySelector('#ef-logout').hidden=!user;document.querySelector('#ef-auth-status').textContent=!user?'Visitante: somente leitura.':ecofixAdmin?'Administrador conectado.':'Usuário sem permissão de edição.';document.querySelector('#ef-migrate').hidden=!(ecofixAdmin&&ecofixRemoteEmpty&&ecofixLocalBackup&&ecofixLocalBackup.substituicoes.length);ecofixPermissions();}
+async function ecofixStart(){
+ const panel=document.createElement('section');panel.className='cadastro';panel.innerHTML='<h2>Acesso e sincronização</h2><p id="ef-auth-status">Conectando...</p><form id="ef-login"><label>E-mail</label><input id="ef-email" type="email" required><label>Senha</label><input id="ef-password" type="password" required><button type="submit">Entrar</button></form><button id="ef-logout" hidden>Sair</button><button id="ef-migrate" hidden>Migrar dados locais para o banco</button>';document.querySelector('.container').prepend(panel);
+ if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){ecofixMsg('Configuração do Supabase ausente.');return;}
+ ecofixClient=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY);ecofixLocalBackup={substituicoes:substituicoes.slice(),producaoDiaria,diasMes,mesesAno,versaoDados:2};
+ const {data:row,error}=await ecofixClient.from('ecofix_state').select('data').eq('id',1).single();
+ if(error){console.error(error);ecofixMsg('Erro ao ler banco compartilhado. Confira a configuração SQL.');return;} ecofixRemoteReady=true;ecofixRemoteEmpty=!(row.data.substituicoes||[]).length;
+ if(ecofixRemoteEmpty){ecofixApply({substituicoes:[],producaoDiaria:88,diasMes:22,mesesAno:12});ecofixMsg('Banco central vazio. Entre como administrador para migrar seus dados locais.');}else{ecofixApply(row.data);ecofixLocalBackup=null;ecofixMsg('Dados carregados do banco compartilhado.');}
+ document.querySelector('#ef-login').addEventListener('submit',async e=>{e.preventDefault();const {error}=await ecofixClient.auth.signInWithPassword({email:document.querySelector('#ef-email').value.trim(),password:document.querySelector('#ef-password').value});document.querySelector('#ef-password').value='';if(error){ecofixMsg('Login não realizado. Confira e-mail e senha.');return;}await ecofixCheckAdmin();});
+ document.querySelector('#ef-logout').addEventListener('click',async()=>{await ecofixClient.auth.signOut();await ecofixCheckAdmin();});
+ document.querySelector('#ef-migrate').addEventListener('click',async()=>{if(!ecofixAdmin||!ecofixLocalBackup||!confirm('Migrar '+ecofixLocalBackup.substituicoes.length+' cadastro(s) para o banco compartilhado? A cópia local será preservada.'))return;const backup=ecofixLocalBackup;const {error}=await ecofixClient.from('ecofix_state').update({data:backup,updated_at:new Date().toISOString()}).eq('id',1);if(error){ecofixMsg('Migração falhou; a cópia local continua preservada.');return;}ecofixRemoteEmpty=false;ecofixLocalBackup=null;ecofixApply(backup);document.querySelector('#ef-migrate').hidden=true;ecofixMsg('Migração concluída.');});
+ await ecofixCheckAdmin();ecofixClient.auth.onAuthStateChange(()=>setTimeout(ecofixCheckAdmin,0));
+ ecofixClient.channel('ecofix-state').on('postgres_changes',{event:'*',schema:'public',table:'ecofix_state',filter:'id=eq.1'},p=>{if(p.new?.data&&!ecofixAdmin){ecofixApply(p.new.data);ecofixMsg('Dados atualizados por um administrador.');}}).subscribe();
+}
+const ecofixOriginalSave=salvarDados;
+salvarDados=function(){ecofixOriginalSave();if(ecofixClient&&ecofixRemoteReady&&ecofixAdmin&&!ecofixApplyingRemote){const payload={substituicoes,producaoDiaria,diasMes,mesesAno,versaoDados:2};ecofixClient.from('ecofix_state').upsert({id:1,data:payload,updated_at:new Date().toISOString()},{onConflict:'id'}).then(({error})=>{if(error){console.error(error);ecofixMsg('Falha ao sincronizar com o banco.');}else ecofixMsg('Dados sincronizados.');});}};
+ecofixStart().catch(e=>{console.error(e);ecofixMsg('Falha ao iniciar conexão com o banco.');});
