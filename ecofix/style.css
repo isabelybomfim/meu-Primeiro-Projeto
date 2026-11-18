@@ -310,3 +310,9 @@ footer {
     line-height: 1.5;
     margin-top: 12px;
 }
+
+
+/* Acesso, autenticação e status de sincronização */
+#ecofix-status { max-width:1100px; margin:12px auto; padding:10px 20px; font-size:14px; }
+#ef-login[hidden], #ef-logout[hidden], #ef-migrate[hidden], .item-local button[hidden] { display:none; }
+button:disabled, input:disabled, select:disabled { opacity:.6; cursor:not-allowed; }
