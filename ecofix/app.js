@@ -2,9 +2,9 @@
 // ECOFIX - CALCULADORA DE ECONOMIA (v2)
 // ======================================
 
-// Preços fictícios para demonstração (substituir por dados reais validados)
-const modelosConvencionais = [0.80, 1.20];
-const modelosReutilizaveis = [3.50, 5.00];
+// Preços informados para o EcoFix
+const modelosConvencionais = [1.03];
+const modelosReutilizaveis = [5.75];
 
 // Elementos da página
 const cadastro = document.querySelector(".cadastro");
@@ -19,7 +19,7 @@ const indicadores = document.querySelectorAll(
 const listaLocais = document.querySelector(".locais");
 
 // Configurações iniciais
-let producaoDiaria = 30;
+let producaoDiaria = 88;
 let diasMes = 22;
 let mesesAno = 12;
 
@@ -37,9 +37,24 @@ function carregarDados() {
 
         if (dados) {
             substituicoes = dados.substituicoes || [];
-            producaoDiaria = dados.producaoDiaria ?? 30;
+            producaoDiaria = dados.producaoDiaria ?? 88;
             diasMes = dados.diasMes ?? 22;
             mesesAno = dados.mesesAno ?? 12;
+
+            // Migração única: substitui os preços antigos de demonstração
+            // pelos preços informados, sem apagar locais, quantidades ou ciclos.
+            if ((dados.versaoDados || 1) < 2) {
+                // Atualiza também o parâmetro antigo de 30 para os 88 informados.
+                producaoDiaria = 88;
+
+                substituicoes = substituicoes.map(item => ({
+                    ...item,
+                    nomeConvencional: "Fita Tyton convencional",
+                    nomeReutilizavel: "Fita reutilizável",
+                    precoConvencional: modelosConvencionais[0],
+                    precoReutilizavel: modelosReutilizaveis[0]
+                }));
+            }
         }
     } catch (erro) {
         console.log("Erro ao recuperar dados:", erro);
@@ -52,7 +67,8 @@ function salvarDados() {
         substituicoes,
         producaoDiaria,
         diasMes,
-        mesesAno
+        mesesAno,
+        versaoDados: 2
     };
 
     try {
@@ -71,12 +87,12 @@ carregarDados();
 
 // Criar campo de ciclos de reutilização
 const labelCiclos = document.createElement("label");
-labelCiclos.textContent = "Ciclos estimados de reutilização";
+labelCiclos.textContent = "Ciclos estimados de reutilização (ajustável)";
 
 const campoCiclos = document.createElement("input");
 campoCiclos.type = "number";
 campoCiclos.min = "1";
-campoCiclos.value = "20";
+campoCiclos.value = "20"; // estimativa inicial, não é dado operacional confirmado
 
 labelCiclos.appendChild(campoCiclos);
 cadastro.insertBefore(labelCiclos, botao);
@@ -90,7 +106,7 @@ configuracao.innerHTML = `
 
     <label>Caminhões produzidos por dia</label>
     <input id="producao" type="number"
-        min="0" step="1" value="30">
+        min="0" step="1" value="88">
 
     <label>Dias produtivos por mês</label>
     <input id="diasMes" type="number"
@@ -217,9 +233,11 @@ function atualizarAnalise() {
 
     const aviso = document.createElement("small");
     aviso.textContent =
-        "Valores estimados com preços fictícios de teste. " +
-        "Não representam economia líquida comprovada: custos de " +
-        "inspeção, limpeza e recuperação ainda não foram considerados.";
+        "Estimativa calculada com os preços informados: Tyton R$ 1,03/unidade " +
+        "e reutilizável R$ 5,75/unidade. Produção de referência: 88 caminhões/dia, " +
+        "22 dias/mês e 12 meses/ano. Os ciclos são uma estimativa ajustável, " +
+        "não um dado operacional confirmado. A economia não é realizada comprovada; " +
+        "custos de inspeção, limpeza e recuperação ainda não foram considerados.";
     analise.appendChild(aviso);
 }
 

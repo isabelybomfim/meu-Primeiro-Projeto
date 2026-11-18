@@ -287,3 +287,26 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+
+/* ANÁLISE E AVISOS DE ESTIMATIVA */
+.analise {
+    background: var(--azul-suave);
+    border: 1px solid var(--borda);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    line-height: 1.6;
+}
+
+.analise h2 {
+    color: var(--azul-escuro);
+    margin-top: 0;
+}
+
+.analise small {
+    display: block;
+    color: var(--cinza);
+    line-height: 1.5;
+    margin-top: 12px;
+}
