@@ -469,70 +469,65 @@ document.querySelector("#mesesAno")
     });
 
 
-// ----- Exportação CSV -----
-
-// Texto seguro para CSV: aspas, separador e fórmulas de planilha
-function csvTexto(valor) {
-    let texto = String(valor ?? "");
-
-    if (/^[=+\-@]/.test(texto)) {
-        texto = "'" + texto;
-    }
-
-    if (/[;"\n]/.test(texto)) {
-        texto = '"' + texto.replace(/"/g, '""') + '"';
-    }
-
-    return texto;
-}
-
-// Número no formato brasileiro (vírgula decimal)
-function csvNumero(valor) {
-    return valor.toFixed(2).replace(".", ",");
-}
+// ----- Exportação para Excel (.xlsx) -----
+botaoExportar.textContent = "Exportar para Excel";
 
 botaoExportar.addEventListener("click", function () {
+    if (!window.XLSX) {
+        alert("Não foi possível carregar o recurso de Excel. Atualize a página e tente novamente.");
+        return;
+    }
+
+    if (substituicoes.length === 0) {
+        alert("Não há substituições cadastradas para exportar.");
+        return;
+    }
+
     const linhas = [[
         "Local",
         "Produto convencional",
         "Produto reutilizável",
         "Quantidade",
-        "Preço convencional",
-        "Preço reutilizável",
+        "Preço convencional (R$)",
+        "Preço reutilizável (R$)",
         "Ciclos",
-        "Investimento inicial",
-        "Economia por caminhão"
+        "Investimento inicial (R$)",
+        "Economia por caminhão (R$)"
     ]];
 
     substituicoes.forEach(item => {
         linhas.push([
-            csvTexto(item.local),
-            csvTexto(item.nomeConvencional || "-"),
-            csvTexto(item.nomeReutilizavel || "-"),
-            item.quantidade,
-            csvNumero(item.precoConvencional),
-            csvNumero(item.precoReutilizavel),
-            item.ciclos,
-            csvNumero(investimentoInicial(item)),
-            csvNumero(calcularEconomia(item))
+            item.local || "",
+            item.nomeConvencional || "-",
+            item.nomeReutilizavel || "-",
+            Number(item.quantidade) || 0,
+            Number(item.precoConvencional) || 0,
+            Number(item.precoReutilizavel) || 0,
+            Number(item.ciclos) || 0,
+            investimentoInicial(item),
+            calcularEconomia(item)
         ]);
     });
 
-    const conteudo = linhas
-        .map(linha => linha.join(";"))
-        .join("\n");
+    const planilha = XLSX.utils.aoa_to_sheet(linhas);
+    planilha["!cols"] = [
+        { wch: 28 }, { wch: 30 }, { wch: 28 }, { wch: 12 },
+        { wch: 22 }, { wch: 24 }, { wch: 10 }, { wch: 24 }, { wch: 28 }
+    ];
+    planilha["!autofilter"] = { ref: planilha["!ref"] };
+    planilha["!freeze"] = { xSplit: 0, ySplit: 1, topLeftCell: "A2", activePane: "bottomLeft", state: "frozen" };
 
-    const arquivo = new Blob(
-        ["\uFEFF" + conteudo],
-        { type: "text/csv;charset=utf-8;" }
-    );
+    // Formatar os valores monetários como números em reais no Excel.
+    for (let linha = 2; linha <= linhas.length; linha++) {
+        [5, 6, 8, 9].forEach(coluna => {
+            const celula = XLSX.utils.encode_cell({ r: linha - 1, c: coluna - 1 });
+            if (planilha[celula]) planilha[celula].z = '"R$" #,##0.00';
+        });
+    }
 
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(arquivo);
-    link.download = "relatorio-ecofix.csv";
-    link.click();
-
-    URL.revokeObjectURL(link.href);
+    const livro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(livro, planilha, "Substituições");
+    XLSX.writeFile(livro, "relatorio-ecofix.xlsx");
 });
 
 // Atualizar todos os indicadores e informações do EcoFix
