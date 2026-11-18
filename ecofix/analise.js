@@ -23,6 +23,7 @@
         const porCaminhao=items.reduce((s,item)=>s+economia(item),0);
         card("Investimento inicial",money(investimento(items)));
         card("Economia estimada por caminhão",money(porCaminhao));
+        card("Economia estimada diária",money(porCaminhao*producao));
         card("Economia estimada mensal",money(porCaminhao*producao*dias));
         card("Economia estimada anual",money(porCaminhao*producao*dias*meses));
         scenario("Conservador · 50% dos ciclos",money(anual(items,.5,producao,dias,meses))+"/ano","Considera metade dos ciclos informados.");
@@ -43,6 +44,42 @@
     async function start(){
         if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){status.textContent="Não foi possível conectar ao banco de dados.";return;}
         const client=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY);
+        const panel=document.querySelector("#ef-login-panel");
+        const statusAuth=document.querySelector("#ef-auth-status");
+        const login=document.querySelector("#ef-login");
+        const logout=document.querySelector("#ef-logout");
+        const manageLink=document.querySelector("#ef-manage-link");
+        document.querySelector("#ef-admin-toggle").addEventListener("click",()=>{panel.hidden=!panel.hidden;});
+        document.querySelector("#ef-close-login").addEventListener("click",()=>{panel.hidden=true;});
+        async function refreshAuth(){
+            const {data:{user}}=await client.auth.getUser();
+            let isAdmin=false;
+            if(user){
+                const result=await client.rpc("is_ecofix_admin");
+                isAdmin=!result.error&&result.data===true;
+            }
+            statusAuth.textContent=!user?"Visitante: somente leitura.":isAdmin?"Administrador conectado.":"Usuário conectado sem permissão administrativa.";
+            login.hidden=!!user;
+            logout.hidden=!user;
+            manageLink.hidden=!isAdmin;
+        }
+        login.addEventListener("submit",async event=>{
+            event.preventDefault();
+            statusAuth.textContent="Verificando acesso...";
+            const {error}=await client.auth.signInWithPassword({
+                email:document.querySelector("#ef-email").value.trim(),
+                password:document.querySelector("#ef-password").value
+            });
+            document.querySelector("#ef-password").value="";
+            if(error){statusAuth.textContent="Não foi possível entrar. Confira o e-mail e a senha.";return;}
+            await refreshAuth();
+        });
+        logout.addEventListener("click",async()=>{
+            await client.auth.signOut();
+            await refreshAuth();
+        });
+        await refreshAuth();
+        client.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
         const {data,error}=await client.from("ecofix_state").select("data").eq("id",1).single();
         if(error){console.error(error);status.textContent="Erro ao carregar os dados compartilhados.";return;}
         render(data.data||{});

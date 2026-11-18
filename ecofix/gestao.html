@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoFix | Área de gestão</title>
+    <link rel="stylesheet" href="style.css?v=ecofix-home-4">
+</head>
+<body>
+    <header class="cabecalho">
+        <div class="logo"><h1>EcoFix</h1><span>ECONOMIA INDUSTRIAL</span></div>
+        <p>Gestão das substituições e parâmetros de produção.</p>
+        <nav class="navegacao-principal" aria-label="Navegação principal">
+            <a href="index.html">Análise complementar</a>
+            <a href="gestao.html" aria-current="page">Área de gestão</a>
+        </nav>
+    </header>
+    <main class="container">
+        <section class="boas-vindas">
+            <h2>Área de gestão</h2>
+            <p>Cadastre e gerencie as substituições utilizadas na análise compartilhada do EcoFix.</p>
+        </section>
+        <section class="indicadores">
+            <div class="card"><h3>Economia por caminhão</h3><p>R$ 0,00</p></div>
+            <div class="card"><h3>Economia diária</h3><p>R$ 0,00</p></div>
+            <div class="card"><h3>Economia mensal</h3><p>R$ 0,00</p></div>
+            <div class="card"><h3>Economia anual</h3><p>R$ 0,00</p></div>
+        </section>
+        <section class="cadastro">
+            <h2>Nova substituição</h2>
+            <label>Local de aplicação</label>
+            <input type="text" placeholder="Ex.: Chicote elétrico do motor">
+            <label>Modelo da fita convencional</label>
+            <select><option>Selecione um modelo</option><option>Fita Tyton convencional</option></select>
+            <label>Modelo da fita reutilizável</label>
+            <select><option>Selecione um modelo</option><option>Fita reutilizável</option></select>
+            <label>Quantidade por caminhão</label>
+            <input type="number" min="1" step="1" value="6" placeholder="Digite a quantidade">
+            <button type="button">Adicionar substituição</button>
+        </section>
+        <section class="locais"><h2>Locais cadastrados</h2><p>Nenhuma substituição cadastrada.</p></section>
+    </main>
+    <footer><p>EcoFix © 2026 | Projeto de Engenharia</p></footer>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js?v=ecofix-home-4"></script>
+    <script src="app.js?v=ecofix-home-4"></script>
+</body>
+</html>
