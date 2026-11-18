@@ -469,65 +469,248 @@ document.querySelector("#mesesAno")
     });
 
 
-// ----- Exportação para Excel (.xlsx) -----
-botaoExportar.textContent = "Exportar para Excel";
+// ----- Exportação Excel com tabela, painel e gráficos -----
+botaoExportar.textContent = "Exportar relatório Excel";
 
-botaoExportar.addEventListener("click", function () {
-    if (!window.XLSX) {
-        alert("Não foi possível carregar o recurso de Excel. Atualize a página e tente novamente.");
+botaoExportar.addEventListener("click", async function () {
+    if (!window.ExcelJS) {
+        alert("Não foi possível carregar o gerador de Excel. Atualize a página e tente novamente.");
         return;
     }
-
+    if (!window.Chart) {
+        alert("Não foi possível carregar os gráficos. Atualize a página e tente novamente.");
+        return;
+    }
     if (substituicoes.length === 0) {
         alert("Não há substituições cadastradas para exportar.");
         return;
     }
 
-    const linhas = [[
-        "Local",
-        "Produto convencional",
-        "Produto reutilizável",
-        "Quantidade",
-        "Preço convencional (R$)",
-        "Preço reutilizável (R$)",
-        "Ciclos",
-        "Investimento inicial (R$)",
-        "Economia por caminhão (R$)"
-    ]];
+    botaoExportar.disabled = true;
+    const textoOriginal = botaoExportar.textContent;
+    botaoExportar.textContent = "Gerando relatório...";
 
-    substituicoes.forEach(item => {
-        linhas.push([
-            item.local || "",
-            item.nomeConvencional || "-",
-            item.nomeReutilizavel || "-",
-            Number(item.quantidade) || 0,
-            Number(item.precoConvencional) || 0,
-            Number(item.precoReutilizavel) || 0,
-            Number(item.ciclos) || 0,
-            investimentoInicial(item),
-            calcularEconomia(item)
-        ]);
-    });
+    const dinheiro = valor => Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    const custoConvencionalItem = item => Number(item.quantidade) * Number(item.precoConvencional);
+    const custoReutilizavelItem = (item, ciclos = item.ciclos) => Number(item.quantidade) * (Number(item.precoReutilizavel) / Math.max(1, Number(ciclos)));
+    const economiaItem = (item, ciclos = item.ciclos) => custoConvencionalItem(item) - custoReutilizavelItem(item, ciclos);
+    const pontoEquilibrioItem = item => Number(item.precoReutilizavel) / Math.max(Number(item.precoConvencional), 0.000001);
+    const producao = Number(producaoDiaria);
+    const dias = Number(diasMes);
+    const meses = Number(mesesAno);
+    const totalPorCaminhao = substituicoes.reduce((s, item) => s + economiaItem(item), 0);
+    const totalDiario = totalPorCaminhao * producao;
+    const totalMensal = totalDiario * dias;
+    const totalAnual = totalMensal * meses;
+    const investimento = substituicoes.reduce((s, item) => s + Number(item.quantidade) * Number(item.precoReutilizavel), 0);
+    const anualCenario = fator => substituicoes.reduce((s, item) => s + economiaItem(item, Math.max(1, Math.round(Number(item.ciclos) * fator))), 0) * producao * dias * meses;
 
-    const planilha = XLSX.utils.aoa_to_sheet(linhas);
-    planilha["!cols"] = [
-        { wch: 28 }, { wch: 30 }, { wch: 28 }, { wch: 12 },
-        { wch: 22 }, { wch: 24 }, { wch: 10 }, { wch: 24 }, { wch: 28 }
-    ];
-    planilha["!autofilter"] = { ref: planilha["!ref"] };
-    planilha["!freeze"] = { xSplit: 0, ySplit: 1, topLeftCell: "A2", activePane: "bottomLeft", state: "frozen" };
+    try {
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = "EcoFix";
+        workbook.subject = "Análise de substituições e economia estimada";
+        workbook.title = "Relatório EcoFix";
+        workbook.company = "EcoFix";
+        workbook.created = new Date();
 
-    // Formatar os valores monetários como números em reais no Excel.
-    for (let linha = 2; linha <= linhas.length; linha++) {
-        [5, 6, 8, 9].forEach(coluna => {
-            const celula = XLSX.utils.encode_cell({ r: linha - 1, c: coluna - 1 });
-            if (planilha[celula]) planilha[celula].z = '"R$" #,##0.00';
+        const resumo = workbook.addWorksheet("Painel", { views: [{ state: "frozen", ySplit: 3 }] });
+        resumo.columns = [
+            { width: 30 }, { width: 24 }, { width: 5 }, { width: 30 }, { width: 24 },
+            { width: 5 }, { width: 30 }, { width: 24 }
+        ];
+        resumo.mergeCells("A1:H1");
+        resumo.getCell("A1").value = "ECOFIX | PAINEL DE ANÁLISE";
+        resumo.getCell("A1").font = { name: "Aptos Display", size: 20, bold: true, color: { argb: "FFFFFFFF" } };
+        resumo.getCell("A1").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF102B4E" } };
+        resumo.getCell("A1").alignment = { vertical: "middle", horizontal: "left" };
+        resumo.getRow(1).height = 38;
+        resumo.mergeCells("A2:H2");
+        resumo.getCell("A2").value = "Indicadores calculados a partir dos cadastros e parâmetros de produção";
+        resumo.getCell("A2").font = { italic: true, color: { argb: "FF64748B" }, size: 10 };
+        resumo.getRow(2).height = 22;
+
+        const kpis = [
+            ["Investimento inicial", investimento],
+            ["Economia estimada por caminhão", totalPorCaminhao],
+            ["Economia estimada diária", totalDiario],
+            ["Economia estimada mensal", totalMensal],
+            ["Economia estimada anual", totalAnual]
+        ];
+        const kpiPositions = [["A4","B4"],["D4","E4"],["G4","H4"],["A7","B7"],["D7","E7"]];
+        kpis.forEach((item, i) => {
+            const [labelCell, valueCell] = kpiPositions[i];
+            const label = resumo.getCell(labelCell);
+            const value = resumo.getCell(valueCell);
+            label.value = item[0];
+            label.font = { bold: true, color: { argb: "FF64748B" }, size: 10 };
+            label.alignment = { wrapText: true, vertical: "middle" };
+            value.value = item[1];
+            value.numFmt = '"R$" #,##0.00;[Red]-"R$" #,##0.00';
+            value.font = { bold: true, size: 16, color: { argb: "FF15966A" } };
+            value.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE8F6F0" } };
+            value.alignment = { vertical: "middle" };
         });
-    }
+        [4,7].forEach(row => resumo.getRow(row).height = 34);
 
-    const livro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(livro, planilha, "Substituições");
-    XLSX.writeFile(livro, "relatorio-ecofix.xlsx");
+        resumo.mergeCells("G7:H7");
+        resumo.getCell("G7").value = "Parâmetros de produção";
+        resumo.getCell("G7").font = { bold: true, color: { argb: "FF102B4E" }, size: 11 };
+        resumo.getCell("G8").value = "Caminhões por dia"; resumo.getCell("H8").value = producao;
+        resumo.getCell("G9").value = "Dias produtivos/mês"; resumo.getCell("H9").value = dias;
+        resumo.getCell("G10").value = "Meses produtivos/ano"; resumo.getCell("H10").value = meses;
+        ["G8","G9","G10"].forEach(ref => resumo.getCell(ref).font = { color: { argb: "FF64748B" }, size: 10 });
+        ["H8","H9","H10"].forEach(ref => resumo.getCell(ref).font = { bold: true, color: { argb: "FF102B4E" } });
+
+        resumo.mergeCells("A11:H11");
+        resumo.getCell("A11").value = "CENÁRIOS DE ECONOMIA ANUAL";
+        resumo.getCell("A11").font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+        resumo.getCell("A11").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1769AA" } };
+        const scenarios = [
+            ["Conservador · 50% dos ciclos", anualCenario(0.5)],
+            ["Informado · 100% dos ciclos", anualCenario(1)],
+            ["Otimista · 150% dos ciclos", anualCenario(1.5)]
+        ];
+        scenarios.forEach((s, i) => {
+            const row = 12 + i;
+            resumo.getCell("A" + row).value = s[0];
+            resumo.getCell("B" + row).value = s[1];
+            resumo.getCell("B" + row).numFmt = '"R$" #,##0.00';
+            resumo.getCell("B" + row).font = { bold: true, color: { argb: "FF15966A" } };
+        });
+
+        // Cria gráficos semelhantes aos da Análise Complementar e os incorpora como imagens no Excel.
+        const palette = ["#102B4E", "#1769AA", "#287DB5", "#80B9E0", "#15966A", "#9BC8E8", "#64748B", "#C5D9EA"];
+        const labels = substituicoes.map(item => item.local || "Sem local");
+        const chartsToEmbed = [];
+        function chartImage(type, data, options = {}) {
+            const canvas = document.createElement("canvas");
+            canvas.width = 900;
+            canvas.height = 420;
+            const chart = new Chart(canvas.getContext("2d"), {
+                type,
+                data,
+                options: {
+                    responsive: false,
+                    animation: false,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: "bottom" }, title: { display: true, text: options.title || "", color: "#102B4E", font: { size: 16, weight: "bold" } } },
+                    scales: type === "doughnut" ? {} : { y: { beginAtZero: true, ticks: { color: "#64748B" }, grid: { color: "#E2E8F0" } }, x: { ticks: { color: "#64748B" }, grid: { display: false } } },
+                    ...options.chartOptions
+                }
+            });
+            chart.update("none");
+            const image = canvas.toDataURL("image/png");
+            chart.destroy();
+            return image;
+        }
+        chartsToEmbed.push({ title: "Comparação de custos por local", image: chartImage("bar", {
+            labels,
+            datasets: [
+                { label: "Custo convencional", data: substituicoes.map(custoConvencionalItem), backgroundColor: "#9BC8E8" },
+                { label: "Reutilizável amortizada", data: substituicoes.map(item => custoReutilizavelItem(item)), backgroundColor: "#1769AA" }
+            ]
+        }, { title: "Comparação de custos por local" }) });
+
+        const monthLabels = Array.from({ length: Math.max(1, meses) }, (_, i) => "Mês " + (i + 1));
+        chartsToEmbed.push({ title: "Projeção acumulada", image: chartImage("line", {
+            labels: monthLabels,
+            datasets: [["Conservador",0.5],["Informado",1],["Otimista",1.5]].map(([label,factor],i) => ({
+                label,
+                data: monthLabels.map((_,n) => anualCenario(factor) / Math.max(1, meses) * (n + 1)),
+                borderColor: palette[i],
+                backgroundColor: palette[i],
+                tension: 0.25
+            }))
+        }, { title: "Projeção acumulada de economia" }) });
+
+        const positivos = substituicoes.filter(item => economiaItem(item) > 0);
+        if (positivos.length) chartsToEmbed.push({ title: "Participação na economia", image: chartImage("doughnut", {
+            labels: positivos.map(item => item.local || "Sem local"),
+            datasets: [{ data: positivos.map(economiaItem), backgroundColor: positivos.map((_,i) => palette[i % palette.length]) }]
+        }, { title: "Participação por local" }) });
+
+        const maxCycle = Math.min(200, Math.max(10, ...substituicoes.map(item => Math.max(Number(item.ciclos) * 2, Math.ceil(pontoEquilibrioItem(item) * 2)))));
+        const cycleLabels = Array.from({ length: maxCycle }, (_, i) => i + 1);
+        chartsToEmbed.push({ title: "Economia por ciclo", image: chartImage("line", {
+            labels: cycleLabels,
+            datasets: substituicoes.map((item,i) => ({
+                label: item.local || "Sem local",
+                data: cycleLabels.map(cycle => economiaItem(item, cycle)),
+                borderColor: palette[i % palette.length],
+                pointRadius: 0,
+                tension: 0.2
+            }))
+        }, { title: "Economia estimada conforme ciclos de reutilização" }) });
+
+        // Imagens dos gráficos posicionadas em duas colunas no painel.
+        chartsToEmbed.forEach((chart, i) => {
+            const imageId = workbook.addImage({ base64: chart.image, extension: "png" });
+            const row = 17 + Math.floor(i / 2) * 22;
+            const col = (i % 2) * 4;
+            resumo.addImage(imageId, { tl: { col, row }, br: { col: col + 3.7, row: row + 20 } });
+        });
+        resumo.mergeCells("A15:H15");
+        resumo.getCell("A15").value = "GRÁFICOS DA ANÁLISE COMPLEMENTAR";
+        resumo.getCell("A15").font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
+        resumo.getCell("A15").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1769AA" } };
+
+        const tabela = workbook.addWorksheet("Substituições", { views: [{ state: "frozen", ySplit: 1 }] });
+        const rows = substituicoes.map(item => [
+            item.local || "", item.nomeConvencional || "-", item.nomeReutilizavel || "-",
+            Number(item.quantidade) || 0, Number(item.precoConvencional) || 0,
+            Number(item.precoReutilizavel) || 0, Number(item.ciclos) || 0,
+            Number(item.quantidade) * Number(item.precoReutilizavel), economiaItem(item),
+            pontoEquilibrioItem(item)
+        ]);
+        tabela.addTable({
+            name: "TabelaSubstituicoesEcoFix",
+            ref: "A1",
+            headerRow: true,
+            style: { theme: "TableStyleMedium2", showRowStripes: true },
+            columns: [
+                { name: "Local" }, { name: "Produto convencional" }, { name: "Produto reutilizável" },
+                { name: "Quantidade por caminhão" }, { name: "Preço convencional (R$)" },
+                { name: "Preço reutilizável (R$)" }, { name: "Ciclos estimados" },
+                { name: "Investimento inicial (R$)" }, { name: "Economia por caminhão (R$)" },
+                { name: "Ponto de equilíbrio (ciclos)" }
+            ],
+            rows
+        });
+        tabela.columns = [
+            { width: 28 }, { width: 30 }, { width: 30 }, { width: 22 }, { width: 22 },
+            { width: 23 }, { width: 17 }, { width: 24 }, { width: 27 }, { width: 26 }
+        ];
+        tabela.autoFilter = { from: "A1", to: "J" + (rows.length + 1) };
+        tabela.getRow(1).height = 32;
+        [5,6,8,9].forEach(col => {
+            for (let row = 2; row <= rows.length + 1; row++) tabela.getCell(row, col).numFmt = '"R$" #,##0.00;[Red]-"R$" #,##0.00';
+        });
+        for (let row = 2; row <= rows.length + 1; row++) tabela.getCell(row, 10).numFmt = '0.0';
+
+        resumo.mergeCells("A" + (18 + Math.ceil(chartsToEmbed.length / 2) * 22) + ":H" + (18 + Math.ceil(chartsToEmbed.length / 2) * 22));
+        const noteRow = 18 + Math.ceil(chartsToEmbed.length / 2) * 22;
+        resumo.getCell("A" + noteRow).value = "Observação: os valores são estimativas com base nos preços, ciclos e parâmetros cadastrados. Custos de inspeção, limpeza e recuperação não estão incluídos."; 
+        resumo.getCell("A" + noteRow).alignment = { wrapText: true, vertical: "middle" };
+        resumo.getCell("A" + noteRow).font = { italic: true, color: { argb: "FF64748B" }, size: 10 };
+        resumo.getRow(noteRow).height = 34;
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "relatorio-ecofix-completo.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error("Erro ao gerar Excel:", error);
+        alert("Não foi possível gerar o relatório completo. Atualize a página e tente novamente.");
+    } finally {
+        botaoExportar.disabled = false;
+        botaoExportar.textContent = "Exportar relatório Excel";
+    }
 });
 
 // Atualizar todos os indicadores e informações do EcoFix
