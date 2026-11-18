@@ -650,3 +650,13 @@ footer {
     .graficos { display: grid; }
     .grafico { min-height: 220px; padding: 12px; }
 }
+
+/* Gerenciamento de usuários EcoFix */
+.ef-user-management > p { color: var(--cinza); font-size: 13px; line-height: 1.6; }
+.ef-user-list-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:24px; }
+.ef-user-list-head h3 { margin:0; color:var(--azul-escuro); font-size:16px; font-weight:750; }
+.ef-user-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px 18px; padding:13px 0; border-bottom:1px solid var(--borda); }
+.ef-user-row strong { color:var(--azul-escuro); min-width:150px; }
+.ef-user-row span { color:var(--texto); font-size:13px; }
+.ef-user-row small { color:var(--cinza); font-size:11px; }
+#ef-user-status { margin:14px 0 0; color:var(--eco-verde); font-size:13px; }
