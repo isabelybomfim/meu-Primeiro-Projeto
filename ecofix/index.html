@@ -1,106 +1,59 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>EcoFix | Economia Industrial</title>
-
-    <link rel="stylesheet" href="style.css?v=ecofix-layout-3">
+    <title>EcoFix | Análise complementar</title>
+    <link rel="stylesheet" href="style.css?v=ecofix-home-4">
 </head>
-
 <body>
-
     <header class="cabecalho">
-        <div class="logo">
-            <h1>EcoFix</h1>
-            <span>ECONOMIA INDUSTRIAL</span>
-        </div>
-
+        <div class="logo"><h1>EcoFix</h1><span>ECONOMIA INDUSTRIAL</span></div>
         <p>Transformando substituições em economia.</p>
         <nav class="navegacao-principal" aria-label="Navegação principal">
-            <a href="index.html" aria-current="page">Painel</a>
-            <a href="analise.html">Análise complementar</a>
+            <a href="index.html" aria-current="page">Análise complementar</a>
+            <a href="gestao.html">Área de gestão</a>
         </nav>
+        <button type="button" id="ef-admin-toggle" class="admin-icon" aria-label="Abrir acesso administrativo" title="Acesso administrativo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21a8 8 0 0 0-16 0M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10Z"/></svg>
+        </button>
     </header>
-
     <main class="container">
-
+        <section id="ef-login-panel" class="cadastro admin-panel" hidden>
+            <div class="admin-panel-head"><h2>Acesso administrativo</h2><button type="button" id="ef-close-login" class="admin-close" aria-label="Fechar">×</button></div>
+            <p id="ef-auth-status">Visitante: somente leitura.</p>
+            <form id="ef-login">
+                <label for="ef-email">E-mail</label><input id="ef-email" type="email" autocomplete="username" required>
+                <label for="ef-password">Senha</label><input id="ef-password" type="password" autocomplete="current-password" required>
+                <button type="submit">Entrar</button>
+            </form>
+            <button type="button" id="ef-logout" hidden>Sair</button>
+            <a id="ef-manage-link" href="gestao.html" hidden>Ir para a área de gestão</a>
+        </section>
         <section class="boas-vindas">
-            <h2>Painel de economia</h2>
-            <p>Acompanhe as estimativas de economia na substituição
-            de fitas Tyton descartáveis por fitas reutilizáveis.</p>
+            <h2>Análise complementar</h2>
+            <p>Investimento, economia diária, cenários de economia e indicadores de equilíbrio das substituições cadastradas.</p>
+            <p id="analise-status" role="status">Carregando dados compartilhados...</p>
         </section>
-
-        <section class="indicadores">
-
-            <div class="card">
-                <h3>Economia por caminhão</h3>
-                <p>R$ 0,00</p>
-            </div>
-
-            <div class="card">
-                <h3>Economia diária</h3>
-                <p>R$ 0,00</p>
-            </div>
-
-            <div class="card">
-                <h3>Economia mensal</h3>
-                <p>R$ 0,00</p>
-            </div>
-
-            <div class="card">
-                <h3>Economia anual</h3>
-                <p>R$ 0,00</p>
-            </div>
-
+        <section id="analise-resumo" class="indicadores"></section>
+        <section class="analise-detalhada">
+            <h2>Cenários de economia anual</h2>
+            <div id="analise-cenarios" class="cenarios-grid"></div>
+            <p class="aviso-estimativa">Os resultados são estimativas calculadas com os preços e parâmetros cadastrados. Os ciclos de reutilização são estimativas ajustáveis, não dados operacionais confirmados. Custos de inspeção, limpeza e recuperação ainda não estão incluídos.</p>
         </section>
-
-        <section class="cadastro">
-
-            <h2>Nova substituição</h2>
-
-            <label>Local de aplicação</label>
-            <input type="text"
-            placeholder="Ex.: Chicote elétrico do motor">
-
-            <label>Modelo da fita convencional</label>
-            <select>
-                <option>Selecione um modelo</option>
-                <option>Fita Tyton convencional</option>
-            </select>
-
-            <label>Modelo da fita reutilizável</label>
-            <select>
-                <option>Selecione um modelo</option>
-                <option>Fita reutilizável</option>
-            </select>
-
-            <label>Quantidade por caminhão</label>
-            <input type="number" min="1" step="1" value="6"
-            placeholder="Digite a quantidade">
-
-            <button type="button">
-                Adicionar substituição
-            </button>
-
+        <section class="graficos analise-graficos">
+            <h2>Gráficos de análise</h2>
+            <div class="grafico"><canvas id="graficoCustos"></canvas></div>
+            <div class="grafico"><canvas id="graficoProjecao"></canvas></div>
+            <div class="grafico" id="blocoDivisao"><canvas id="graficoDivisao"></canvas></div>
+            <div class="grafico"><canvas id="graficoEquilibrio"></canvas></div>
         </section>
-
-        <section class="locais">
-            <h2>Locais cadastrados</h2>
-            <p>Nenhuma substituição cadastrada.</p>
-        </section>
-
+        <section class="locais"><h2>Detalhamento por local</h2><div id="analise-detalhes"></div></section>
     </main>
-
-    <footer>
-        <p>EcoFix © 2026 | Projeto de Engenharia</p>
-    </footer>
-
+    <footer><p>EcoFix © 2026 | Projeto de Engenharia</p></footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="supabase-config.js?v=ecofix-layout-3"></script>
-    <script src="app.js?v=ecofix-layout-3"></script>
-
+    <script src="supabase-config.js?v=ecofix-home-4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="analise.js?v=ecofix-home-4"></script>
 </body>
 </html>
