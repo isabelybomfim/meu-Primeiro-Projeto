@@ -12,7 +12,9 @@
     const anual = (items, fator, producao, dias, meses) => items.reduce((s,item)=>s+economia(item,Math.max(1,Math.round(Number(item.ciclos)*fator))),0)*producao*dias*meses;
     function card(label,value){const el=document.createElement("div");el.className="card";const h=document.createElement("h3");h.textContent=label;const p=document.createElement("p");p.textContent=value;el.append(h,p);resumo.append(el);}
     function scenario(label,value,description){const el=document.createElement("article");el.className="cenario-card";const h=document.createElement("h3");h.textContent=label;const p=document.createElement("p");p.textContent=value;const small=document.createElement("small");small.textContent=description;el.append(h,p,small);cenarios.append(el);}
+    const charts=[];
     function render(data){
+        charts.forEach(chart=>chart.destroy());charts.length=0;
         const items=Array.isArray(data.substituicoes)?data.substituicoes:[];
         const producao=Number(data.producaoDiaria??88), dias=Number(data.diasMes??22), meses=Number(data.mesesAno??12);
         resumo.innerHTML="";cenarios.innerHTML="";detalhes.innerHTML="";
@@ -29,14 +31,14 @@
         items.forEach(item=>{const row=document.createElement("article");row.className="item-local";const h=document.createElement("strong");h.textContent=item.local;const p=document.createElement("p");p.textContent="Quantidade por caminhão: "+item.quantidade+" · Ciclos estimados: "+item.ciclos+" · Economia estimada por caminhão: "+money(economia(item))+" · Ponto de equilíbrio: "+equilibrio(item).toFixed(1).replace(".",",")+" ciclos.";row.append(h,p);if(Number(item.ciclos)<=equilibrio(item)){const warning=document.createElement("p");warning.className="aviso-equilibrio";warning.textContent="Atenção: os ciclos informados ainda não geram economia positiva.";row.append(warning);}detalhes.append(row);});
         const labels=items.map(i=>i.local), colors=["#001E50","#005B9A","#287DB5","#80B9E0","#A9CDE8","#456A91","#6F8EAE","#C5D9EA"];
         const opts={responsive:true,maintainAspectRatio:true,plugins:{legend:{position:"bottom"}}};
-        new Chart(document.querySelector("#graficoCustos"),{type:"bar",data:{labels,datasets:[{label:"Convencional",data:items.map(custoConvencional),backgroundColor:"#80B9E0"},{label:"Reutilizável amortizada",data:items.map(custoAmortizado),backgroundColor:"#005B9A"}]},options:opts});
+        charts.push(new Chart(document.querySelector("#graficoCustos"),{type:"bar",data:{labels,datasets:[{label:"Convencional",data:items.map(custoConvencional),backgroundColor:"#80B9E0"},{label:"Reutilizável amortizada",data:items.map(custoAmortizado),backgroundColor:"#005B9A"}]},options:opts}));
         const monthLabels=Array.from({length:Math.max(0,meses)},(_,i)=>"Mês "+(i+1));
-        new Chart(document.querySelector("#graficoProjecao"),{type:"line",data:{labels:monthLabels,datasets:[["Conservador",.5],["Informado",1],["Otimista",1.5]].map(([label,factor],i)=>({label,data:monthLabels.map((_,n)=>anual(items,factor,producao,dias,meses)/Math.max(1,meses)*(n+1)),borderColor:colors[i],tension:.2}))},options:opts});
+        charts.push(new Chart(document.querySelector("#graficoProjecao"),{type:"line",data:{labels:monthLabels,datasets:[["Conservador",.5],["Informado",1],["Otimista",1.5]].map(([label,factor],i)=>({label,data:monthLabels.map((_,n)=>anual(items,factor,producao,dias,meses)/Math.max(1,meses)*(n+1)),borderColor:colors[i],tension:.2}))},options:opts}));
         const positive=items.filter(i=>economia(i)>0);document.querySelector("#blocoDivisao").hidden=!positive.length;
-        if(positive.length)new Chart(document.querySelector("#graficoDivisao"),{type:"doughnut",data:{labels:positive.map(i=>i.local),datasets:[{data:positive.map(i=>economia(i)),backgroundColor:positive.map((_,i)=>colors[i%colors.length])}]},options:opts});
+        if(positive.length)charts.push(new Chart(document.querySelector("#graficoDivisao"),{type:"doughnut",data:{labels:positive.map(i=>i.local),datasets:[{data:positive.map(i=>economia(i)),backgroundColor:positive.map((_,i)=>colors[i%colors.length])}]},options:opts}));
         const maxCycle=Math.min(200,Math.max(10,...items.map(i=>Math.max(Number(i.ciclos)*2,Math.ceil(equilibrio(i)*2)))));
         const cycleLabels=Array.from({length:maxCycle},(_,i)=>i+1);
-        new Chart(document.querySelector("#graficoEquilibrio"),{type:"line",data:{labels:cycleLabels,datasets:items.map((item,i)=>({label:item.local,data:cycleLabels.map(c=>economia(item,c)),borderColor:colors[i%colors.length],pointRadius:0,tension:.2}))},options:opts});
+        charts.push(new Chart(document.querySelector("#graficoEquilibrio"),{type:"line",data:{labels:cycleLabels,datasets:items.map((item,i)=>({label:item.local,data:cycleLabels.map(c=>economia(item,c)),borderColor:colors[i%colors.length],pointRadius:0,tension:.2}))},options:opts}));
     }
     async function start(){
         if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){status.textContent="Não foi possível conectar ao banco de dados.";return;}
