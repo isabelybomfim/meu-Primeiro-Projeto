@@ -1,4 +1,4 @@
--- EcoFix: banco compartilhado com leitura pública e escrita exclusiva de administradores.
+-- EcoFix: banco compartilhado com leitura pública e edição para usuários autenticados.
 -- Execute este arquivo no SQL Editor do Supabase.
 
 create table if not exists public.ecofix_state (
@@ -49,26 +49,29 @@ to anon, authenticated
 using (true);
 
 drop policy if exists "EcoFix: administradores inserem" on public.ecofix_state;
-create policy "EcoFix: administradores inserem"
+drop policy if exists "EcoFix: usuarios autenticados inserem" on public.ecofix_state;
+create policy "EcoFix: usuarios autenticados inserem"
 on public.ecofix_state
 for insert
 to authenticated
-with check ((select private.is_ecofix_admin()));
+with check (auth.uid() is not null);
 
 drop policy if exists "EcoFix: administradores atualizam" on public.ecofix_state;
-create policy "EcoFix: administradores atualizam"
+drop policy if exists "EcoFix: usuarios autenticados atualizam" on public.ecofix_state;
+create policy "EcoFix: usuarios autenticados atualizam"
 on public.ecofix_state
 for update
 to authenticated
-using ((select private.is_ecofix_admin()))
-with check ((select private.is_ecofix_admin()));
+using (auth.uid() is not null)
+with check (auth.uid() is not null);
 
 drop policy if exists "EcoFix: administradores excluem" on public.ecofix_state;
-create policy "EcoFix: administradores excluem"
+drop policy if exists "EcoFix: usuarios autenticados excluem" on public.ecofix_state;
+create policy "EcoFix: usuarios autenticados excluem"
 on public.ecofix_state
 for delete
 to authenticated
-using ((select private.is_ecofix_admin()));
+using (auth.uid() is not null);
 
 insert into public.ecofix_state (id)
 values (1)
