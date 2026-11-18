@@ -349,3 +349,22 @@ button:disabled, input:disabled, select:disabled { opacity:.6; cursor:not-allowe
 .cenario-card small,.aviso-estimativa { color:var(--cinza); line-height:1.6; }
 .aviso-equilibrio { color:#9a4b00; font-weight:bold; }
 .analise-graficos { margin:20px 0; }
+
+
+/* Ajustes da página inicial de análise e acesso administrativo */
+#ef-manage-link[hidden] { display:none; }
+#ef-manage-link { display:inline-block; margin:16px 0 0 12px; color:var(--azul); font-weight:bold; }
+.admin-panel { position:relative; max-width:520px; margin:20px 0 24px auto; }
+.admin-panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.admin-panel-head h2 { margin:0; }
+.admin-close { margin:0; padding:4px 12px; font-size:24px; background:var(--cinza); }
+#ef-auth-status { color:var(--cinza); }
+.admin-icon { margin:0; width:44px; height:44px; padding:10px; border:1px solid #ffffff66; border-radius:50%; background:transparent; display:grid; place-items:center; flex:0 0 auto; }
+.admin-icon:hover { background:#ffffff20; }
+.admin-icon svg { width:22px; height:22px; fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+@media (max-width:700px) {
+    .cabecalho { position:relative; padding-right:70px; }
+    .admin-icon { position:absolute; top:20px; right:6%; }
+    .navegacao-principal { order:3; width:100%; }
+    .admin-panel { margin-left:0; }
+}
