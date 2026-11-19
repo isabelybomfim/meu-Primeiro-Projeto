@@ -618,9 +618,9 @@ botaoExportar.addEventListener("click", async function () {
                 label: "Saldo potencial acumulado",
                 data: monthLabels.map((_,n) => gastoMensal * (n + 1) - investimento),
                 borderColor: palette[1],
-                backgroundColor: palette[i],
+                backgroundColor: palette[1],
                 tension: 0.25
-            }))
+            }]
         }, { title: "Projeção acumulada de economia" }) });
 
         const positivos = substituicoes.filter(item => (custoConvencionalItem(item) * producao * dias * meses - Number(item.quantidade) * Number(item.precoReutilizavel) * producao) > 0);
@@ -631,16 +631,16 @@ botaoExportar.addEventListener("click", async function () {
 
         const maxCycle = Math.min(200, Math.max(10, ...substituicoes.map(item => Math.max(Number(item.ciclos) * 2, Math.ceil(pontoEquilibrioItem(item) * 2)))));
         const cycleLabels = Array.from({ length: maxCycle }, (_, i) => i + 1);
-        chartsToEmbed.push({ title: "Economia por ciclo", image: chartImage("line", {
+        chartsToEmbed.push({ title: "Custo reutilizável por ciclo", image: chartImage("line", {
             labels: cycleLabels,
             datasets: substituicoes.map((item,i) => ({
                 label: item.local || "Sem local",
-                data: cycleLabels.map(cycle => economiaItem(item, cycle)),
+                data: cycleLabels.map(cycle => Number(item.quantidade) * Number(item.precoReutilizavel) / cycle),
                 borderColor: palette[i % palette.length],
                 pointRadius: 0,
                 tension: 0.2
             }))
-        }, { title: "Economia estimada conforme ciclos de reutilização" }) });
+        }, { title: "Custo equivalente da fita reutilizável por ciclo (referência operacional)" }) });
 
         // Imagens dos gráficos posicionadas em duas colunas no painel.
         chartsToEmbed.forEach((chart, i) => {
