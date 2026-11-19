@@ -1,9 +1,10 @@
 (() => {
     const status=document.querySelector("#analise-status"),resumo=document.querySelector("#analise-resumo"),cenarios=document.querySelector("#analise-cenarios"),detalhes=document.querySelector("#analise-detalhes");
     const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-    const custo=item=>Number(item.quantidade)*Number(item.precoConvencional);
-    const invUnit=item=>Number(item.quantidade)*Number(item.precoReutilizavel);
-    const equilibrio=item=>Number(item.precoReutilizavel)/Math.max(Number(item.precoConvencional),.000001);
+    const PRECO_TYTON=1.03, PRECO_REUTILIZAVEL=5.75;
+    const custo=item=>Number(item.quantidade)*PRECO_TYTON;
+    const invUnit=item=>Number(item.quantidade)*PRECO_REUTILIZAVEL;
+    const equilibrio=()=>PRECO_REUTILIZAVEL/PRECO_TYTON;
     const ciclosMin=item=>Math.floor(equilibrio(item))+1;
     const charts=[];
     function card(label,value){const e=document.createElement("div");e.className="card";const h=document.createElement("h3"),p=document.createElement("p");h.textContent=label;p.textContent=value;e.append(h,p);resumo.append(e);}
@@ -31,7 +32,7 @@
       document.querySelector("#blocoDivisao").hidden=!positive.length;
       if(positive.length)charts.push(new Chart(document.querySelector("#graficoDivisao"),{type:"doughnut",data:{labels:items.filter((_,i)=>gains[i]>0).map(i=>i.local),datasets:[{data:positive,backgroundColor:positive.map((_,i)=>colors[i%colors.length])}]},options:opts}));
       const max=Math.min(200,Math.max(10,...items.map(i=>Math.max(Number(i.ciclos)*2,Math.ceil(equilibrio(i)*2))))),cycleLabels=Array.from({length:max},(_,i)=>i+1);
-      charts.push(new Chart(document.querySelector("#graficoEquilibrio"),{type:"line",data:{labels:cycleLabels,datasets:items.map((i,n)=>({label:i.local,data:cycleLabels.map(c=>Number(i.precoReutilizavel)/c),borderColor:colors[n%colors.length],pointRadius:0,tension:.2}))},options:{...opts,plugins:{...opts.plugins,title:{display:true,text:"Custo reutilizável equivalente por ciclo (referência operacional)"}}}}));
+      charts.push(new Chart(document.querySelector("#graficoEquilibrio"),{type:"line",data:{labels:cycleLabels,datasets:items.map((i,n)=>({label:i.local,data:cycleLabels.map(c=>Number(i.quantidade)*PRECO_REUTILIZAVEL/c),borderColor:colors[n%colors.length],pointRadius:0,tension:.2}))},options:{...opts,plugins:{...opts.plugins,title:{display:true,text:"Custo reutilizável equivalente por ciclo (referência operacional)"}}}}));
     }
     async function start(){
         if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){status.textContent="Não foi possível conectar ao banco de dados.";return;}
