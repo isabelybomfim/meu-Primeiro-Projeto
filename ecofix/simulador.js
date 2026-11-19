@@ -1,147 +1,19 @@
-/* EcoFix — Simulador independente. Leitura do Supabase; nunca grava no banco. */
+/* EcoFix — Simulador alinhado à fórmula financeira oficial. Leitura do Supabase; nunca grava no banco. */
 (() => {
-  "use strict";
-  const defaults={quantidade:6,producao:88,dias:22,meses:12,tyton:1.03,reutilizavel:5.75,ciclos:20};
-  const storageKey="ecofix_simulador_params_v1";
-  const ids={quantidade:"sim-quantidade",producao:"sim-producao",dias:"sim-dias",meses:"sim-meses",tyton:"sim-tyton",reutilizavel:"sim-reutilizavel",ciclos:"sim-ciclos"};
-  const money=n=>Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  const integer=n=>Math.round(n).toLocaleString("pt-BR");
-  const number=n=>Number(n).toLocaleString("pt-BR",{maximumFractionDigits:2});
-  const $=id=>document.getElementById(id);
-  let chart=null;
-  let params={...defaults};
-  let loadedShared=false;
-  let lastCalculation=null;
-
-  function readParams(){
-    const next={};
-    for(const [key,id] of Object.entries(ids)){
-      const el=$(id), value=Number(el.value);
-      const min=Number(el.min), max=Number(el.max);
-      if(!Number.isFinite(value)||value<min||value>max||(el.step==="1"&&!Number.isInteger(value))){
-        el.setCustomValidity("Informe um valor válido dentro do intervalo permitido.");
-        el.reportValidity();el.focus();return null;
-      }
-      el.setCustomValidity("");next[key]=value;
-    }
-    return next;
-  }
-  function calculate(p){
-    const unidadesDia=p.quantidade*p.producao;
-    const unidadesMes=unidadesDia*p.dias;
-    const unidadesAno=unidadesMes*p.meses;
-    const custoDescartavelAno=unidadesAno*p.tyton;
-    const estoqueInicial=unidadesDia;
-    const investimento=estoqueInicial*p.reutilizavel;
-    const custoAmortizadoAno=unidadesAno*(p.reutilizavel/p.ciclos);
-    const economiaPrimeiroAno=custoDescartavelAno-investimento;
-    const economiaOperacional=custoDescartavelAno-custoAmortizadoAno;
-    const equilibrio=Math.floor(p.reutilizavel/p.tyton)+1;
-    return {unidadesDia,unidadesMes,unidadesAno,custoDescartavelAno,estoqueInicial,investimento,custoAmortizadoAno,economiaPrimeiroAno,economiaOperacional,equilibrio,residuoPotencial:unidadesAno};
-  }
-  function setText(id,value){$(id).textContent=value;}
-  function render(){
-    const p=readParams();if(!p)return;
-    params=p;
-    try{localStorage.setItem(storageKey,JSON.stringify(params));}catch(_){}
-    const c=calculate(p);lastCalculation={...c,...p};
-    setText("kpi-descartavel",money(c.custoDescartavelAno));
-    setText("kpi-volume",integer(c.unidadesAno)+" unidades descartáveis/ano");
-    setText("kpi-investimento",money(c.investimento));
-    setText("kpi-estoque",integer(c.estoqueInicial)+" fitas para o estoque inicial");
-    setText("kpi-primeiro-ano",money(c.economiaPrimeiroAno));
-    setText("kpi-amortizado",money(c.custoAmortizadoAno));
-    setText("kpi-economia-amortizada",money(c.economiaOperacional)+" de diferença anual estimada");
-    setText("kpi-economia",money(c.economiaOperacional));
-    setText("kpi-equilibrio",integer(c.equilibrio)+" ciclos");
-    setText("kpi-residuo",integer(c.residuoPotencial)+" unidades/ano");
-    setText("tab-volume",integer(c.unidadesAno)+" unidades");
-    setText("tab-descartavel",money(c.custoDescartavelAno));
-    setText("tab-investimento",money(c.investimento));
-    setText("tab-amortizado",money(c.custoAmortizadoAno));
-    setText("tab-economia",money(c.economiaOperacional));
-    if(window.Chart){
-      const data={labels:["Custo anual descartável","Investimento inicial reutilizável","Custo reutilizável amortizado/ano"],datasets:[{label:"Custo projetado (R$)",data:[c.custoDescartavelAno,c.investimento,c.custoAmortizadoAno],backgroundColor:["#80B9E0","#005B9A","#287DB5"]}]};
-      if(chart){chart.data=data;chart.update();}
-      else chart=new Chart($("sim-chart"),{type:"bar",data,options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>money(ctx.raw)}}},scales:{y:{beginAtZero:true,ticks:{callback:value=>money(value)}}}}});
-    }
-  }
-  function csv(){
-    if(!lastCalculation)return;
-    const c=lastCalculation;
-    const rows=[
-      ["EcoFix - Simulador de economia"],
-      ["Indicador","Valor","Unidade"],
-      ["Fitas por caminhão",c.quantidade,"unidades"],
-      ["Caminhões por dia",c.producao,"unidades"],
-      ["Dias produtivos por mês",c.dias,"dias"],
-      ["Meses produtivos por ano",c.meses,"meses"],
-      ["Preço Tyton",c.tyton,"BRL/unidade"],
-      ["Preço reutilizável",c.reutilizavel,"BRL/unidade"],
-      ["Ciclos estimados",c.ciclos,"ciclos"],
-      ["Consumo descartável anual",c.unidadesAno,"unidades"],
-      ["Gasto anual descartável",c.custoDescartavelAno.toFixed(2),"BRL"],
-      ["Estoque inicial",c.estoqueInicial,"unidades"],
-      ["Investimento inicial",c.investimento.toFixed(2),"BRL"],
-      ["Custo reutilizável amortizado anual",c.custoAmortizadoAno.toFixed(2),"BRL"],
-      ["Economia potencial no primeiro ano",c.economiaPrimeiroAno.toFixed(2),"BRL"],
-      ["Economia operacional estimada anual",c.economiaOperacional.toFixed(2),"BRL"],
-      ["Ponto de equilíbrio",c.equilibrio,"ciclos"],
-      ["Unidades descartáveis potencialmente evitadas",c.residuoPotencial,"unidades"],
-      ["Observação","Todos os valores são projeções; não representam resultados financeiros ou ambientais realizados."]
-    ];
-    const content="\uFEFF"+rows.map(row=>row.map(value=>'"'+String(value??"").replace(/"/g,'""')+'"').join(";")).join("\r\n");
-    const blob=new Blob([content],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob),a=document.createElement("a");
-    a.href=url;a.download="ecofix-simulacao.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-  }
-  function applySaved(){
-    try{
-      const saved=JSON.parse(localStorage.getItem(storageKey)||"null");
-      if(saved&&typeof saved==="object")for(const [key,id] of Object.entries(ids))if(Number.isFinite(Number(saved[key]))) $(id).value=saved[key];
-    }catch(_){}
-  }
-  async function loadSharedDefaults(){
-    const status=$("sim-status");
-    if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){
-      status.textContent="Não foi possível acessar o banco compartilhado. Os valores padrão estão disponíveis para simulação.";return;
-    }
-    try{
-      const client=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY);
-      const {data,error}=await client.from("ecofix_state").select("data").eq("id",1).maybeSingle();
-      if(error)throw error;
-      const state=data?.data||{};
-      const items=Array.isArray(state.substituicoes)?state.substituicoes:[];
-      if(items.length){
-        const total=items.reduce((sum,item)=>sum+Math.max(0,Number(item.quantidade)||0),0);
-        if(total>0) $("sim-quantidade").value=String(total);
-        const first=items[0];
-        if(Number(first.precoConvencional)>0)$("sim-tyton").value=String(first.precoConvencional);
-        if(Number(first.precoReutilizavel)>0)$("sim-reutilizavel").value=String(first.precoReutilizavel);
-        const cycles=items.reduce((sum,item)=>sum+(Number(item.ciclos)>0?Number(item.ciclos):20),0)/items.length;
-        if(cycles>0)$("sim-ciclos").value=String(Math.max(1,Math.round(cycles)));
-      }
-      if(Number(state.producaoDiaria)>0)$("sim-producao").value=String(state.producaoDiaria);
-      if(Number(state.diasMes)>0)$("sim-dias").value=String(state.diasMes);
-      if(Number(state.mesesAno)>0)$("sim-meses").value=String(state.mesesAno);
-      loadedShared=true;
-      status.textContent="Parâmetros carregados do banco compartilhado em modo somente leitura. As alterações desta página não são sincronizadas.";
-    }catch(error){
-      console.warn("EcoFix simulador: não foi possível carregar parâmetros compartilhados.",error);
-      status.textContent="Banco compartilhado indisponível no momento. Você pode simular com os valores padrão; nenhum dado será alterado.";
-    }
-  }
-  $("sim-reset").addEventListener("click",()=>{
-    for(const [key,id] of Object.entries(ids))$(id).value=String(defaults[key]);
-    try{localStorage.removeItem(storageKey);}catch(_){}
-    render();
-  });
-  $("sim-csv").addEventListener("click",csv);
-  Object.values(ids).forEach(id=>$(id).addEventListener("input",render));
-  (async()=>{
-    await loadSharedDefaults();
-    applySaved();
-    render();
-    if(!loadedShared&&$("sim-status").textContent.includes("indisponível"))return;
-  })();
+"use strict";
+const defaults={quantidade:6,producao:88,dias:22,meses:12,tyton:1.03,reutilizavel:5.75,ciclos:20},storageKey="ecofix_simulador_params_v1";
+const ids={quantidade:"sim-quantidade",producao:"sim-producao",dias:"sim-dias",meses:"sim-meses",tyton:"sim-tyton",reutilizavel:"sim-reutilizavel",ciclos:"sim-ciclos"};
+const $=id=>document.getElementById(id),money=n=>Number(n).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}),integer=n=>Math.round(n).toLocaleString("pt-BR"),decimal=n=>Number(n).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+let chart=null,last=null,loaded=false;
+function read(){const p={};for(const [k,id] of Object.entries(ids)){const e=$(id),v=Number(e.value);if(!Number.isFinite(v)||v<Number(e.min)||v>Number(e.max)||(e.step==="1"&&!Number.isInteger(v))){e.setCustomValidity("Informe um valor válido.");e.reportValidity();e.focus();return null;}e.setCustomValidity("");p[k]=v;}return p;}
+function calc(p){const dia=p.quantidade*p.producao,mes=dia*p.dias,ano=mes*p.meses,gastoDia=dia*p.tyton,gastoAno=ano*p.tyton,estoque=dia,invest=estoque*p.reutilizavel,economia=gastoAno-invest;return{dia,mes,ano,gastoDia,gastoAno,estoque,invest,economia,reducao:gastoAno?economia/gastoAno*100:0,equilibrio:Math.floor(p.reutilizavel/p.tyton)+1,equivalencia:gastoDia?invest/gastoDia:0};}
+function render(){const p=read();if(!p)return;try{localStorage.setItem(storageKey,JSON.stringify(p));}catch(_){}const c=calc(p);last={...p,...c};
+$("kpi-descartavel").textContent=money(c.gastoAno);$("kpi-volume").textContent=integer(c.ano)+" unidades descartáveis/ano";$("kpi-investimento").textContent=money(c.invest);$("kpi-estoque").textContent=integer(c.estoque)+" fitas no estoque inicial";$("kpi-primeiro-ano").textContent=money(c.economia);$("kpi-reducao").textContent=decimal(c.reducao)+"%";$("kpi-equivalencia").textContent=decimal(c.equivalencia)+" dias produtivos";$("kpi-equilibrio").textContent=integer(c.equilibrio)+" utilizações";$("kpi-residuo").textContent=integer(c.ano)+" unidades/ano";
+$("tab-volume").textContent=integer(c.ano)+" unidades";$("tab-descartavel").textContent=money(c.gastoAno);$("tab-investimento").textContent=money(c.invest);$("tab-economia").textContent=money(c.economia);$("tab-equilibrio").textContent=integer(c.equilibrio)+" utilizações";
+if(window.Chart){const data={labels:["Gasto anual com Tyton descartável","Investimento inicial reutilizável"],datasets:[{label:"Valor projetado (R$)",data:[c.gastoAno,c.invest],backgroundColor:["#80B9E0","#005B9A"]}]};if(chart){chart.data=data;chart.update();}else chart=new Chart($("sim-chart"),{type:"bar",data,options:{responsive:true,plugins:{legend:{display:false},tooltip:{callbacks:{label:x=>money(x.raw)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>money(v)}}}}});}}
+function csv(){if(!last)return;const c=last,rows=[["EcoFix - Simulador de economia"],["Indicador","Valor","Unidade"],["Fitas por caminhão",c.quantidade,"unidades"],["Caminhões por dia",c.producao,"unidades"],["Dias produtivos por mês",c.dias,"dias"],["Meses produtivos por ano",c.meses,"meses"],["Preço Tyton",c.tyton,"BRL/unidade"],["Preço reutilizável",c.reutilizavel,"BRL/unidade"],["Ciclos estimados (referência operacional)",c.ciclos,"ciclos"],["Consumo descartável anual",c.ano,"unidades"],["Gasto anual descartável",c.gastoAno.toFixed(2),"BRL"],["Estoque inicial reutilizável",c.estoque,"unidades"],["Investimento inicial",c.invest.toFixed(2),"BRL"],["Economia potencial no primeiro ano",c.economia.toFixed(2),"BRL"],["Redução potencial do custo de aquisição",c.reducao.toFixed(2),"%"],["Ponto de equilíbrio",c.equilibrio,"utilizações"],["Equivalência financeira do investimento",c.equivalencia.toFixed(2),"dias produtivos"],["Unidades descartáveis potencialmente evitadas",c.ano,"unidades"],["Observação","Economia potencial = gasto anual com Tyton menos investimento inicial. Ciclos não amortizam a economia principal; custos operacionais adicionais não incluídos."]];const body="\uFEFF"+rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(";")).join("\r\n"),blob=new Blob([body],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="ecofix-simulacao.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);}
+function saved(){try{const s=JSON.parse(localStorage.getItem(storageKey)||"null");if(s)for(const [k,id] of Object.entries(ids))if(Number.isFinite(Number(s[k]))&&s[k]!==undefined)$(id).value=s[k];}catch(_){}}
+async function shared(){const status=$("sim-status");if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){status.textContent="Banco compartilhado indisponível; usando valores padrão.";return;}try{const c=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY),{data,error}=await c.from("ecofix_state").select("data").eq("id",1).maybeSingle();if(error)throw error;const s=data?.data||{},items=Array.isArray(s.substituicoes)?s.substituicoes:[];if(items.length){const qty=items.reduce((n,i)=>n+Math.max(0,Number(i.quantidade)||0),0);if(qty)$("sim-quantidade").value=String(qty);const first=items[0];if(Number(first.precoConvencional)>0)$("sim-tyton").value=first.precoConvencional;if(Number(first.precoReutilizavel)>0)$("sim-reutilizavel").value=first.precoReutilizavel;const cycles=items.reduce((n,i)=>n+(Number(i.ciclos)>0?Number(i.ciclos):20),0)/items.length;$("sim-ciclos").value=String(Math.max(1,Math.round(cycles)));}for(const [key,id] of [["producao","sim-producao"],["dias","sim-dias"],["meses","sim-meses"]]){const source={producao:"producaoDiaria",dias:"diasMes",meses:"mesesAno"}[key];if(Number(s[source])>0)$(id).value=s[source];}loaded=true;status.textContent="Parâmetros carregados do banco compartilhado. Ciclos são apenas referência operacional.";}catch(e){console.warn(e);status.textContent="Banco compartilhado indisponível; usando valores padrão.";}}
+$("sim-reset").addEventListener("click",()=>{for(const [k,id] of Object.entries(ids))$(id).value=defaults[k];try{localStorage.removeItem(storageKey);}catch(_){}render();});$("sim-csv").addEventListener("click",csv);Object.values(ids).forEach(id=>$(id).addEventListener("input",render));
+(async()=>{await shared();saved();render();})();
 })();
