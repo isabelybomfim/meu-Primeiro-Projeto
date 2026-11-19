@@ -1,5 +1,5 @@
 (() => {
-    const status=document.querySelector("#analise-status"),resumo=document.querySelector("#analise-resumo"),economiaBox=document.querySelector("#analise-economia"),cenarios=document.querySelector("#analise-cenarios"),detalhes=document.querySelector("#analise-detalhes");
+    const status=document.querySelector("#analise-status"),resumo=document.querySelector("#analise-resumo"),investimentoBox=document.querySelector("#analise-investimento"),economiaBox=document.querySelector("#analise-economia"),cenarios=document.querySelector("#analise-cenarios"),detalhes=document.querySelector("#analise-detalhes");
     const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
     const PRECO_TYTON=1.03, PRECO_REUTILIZAVEL=5.75;
     const custo=item=>Number(item.quantidade)*PRECO_TYTON;
@@ -13,7 +13,7 @@
       charts.forEach(c=>c.destroy());charts.length=0;
       const items=Array.isArray(data.substituicoes)?data.substituicoes:[];
       const producao=Number(data.producaoDiaria??88),dias=Number(data.diasMes??22),meses=Number(data.mesesAno??12);
-      resumo.innerHTML="";economiaBox.innerHTML="";cenarios.innerHTML="";detalhes.innerHTML="";
+      resumo.innerHTML="";investimentoBox.innerHTML="";economiaBox.innerHTML="";cenarios.innerHTML="";detalhes.innerHTML="";
       if(!items.length){status.textContent="Ainda não há substituições cadastradas para analisar.";document.querySelector(".analise-graficos").hidden=true;return;}
       document.querySelector(".analise-graficos").hidden=false;
       status.textContent="Dados carregados do banco compartilhado. Valores apresentados como projeções.";
@@ -25,7 +25,7 @@
       economyCard("Por dia",economiaDia,"Total diário considerando a quantidade de caminhões informada.");
       economyCard("Por mês",economiaMes,"Total mensal considerando os dias produtivos cadastrados.");
       economyCard("Por ano",economia,"Economia potencial líquida no primeiro ano, após descontar o investimento inicial.");
-      card("Investimento inicial",money(investimento));card("Gasto Tyton por caminhão",money(porCaminhao));card("Gasto descartável diário",money(gastoDia));card("Gasto descartável mensal",money(gastoMes));card("Gasto descartável anual",money(gastoAno));card("Economia potencial no primeiro ano",money(economia));
+      card("Investimento inicial",money(investimento),investimentoBox);card("Gasto Tyton por caminhão",money(porCaminhao));card("Gasto descartável diário",money(gastoDia));card("Gasto descartável mensal",money(gastoMes));card("Gasto descartável anual",money(gastoAno));
       info("Fórmula principal",money(gastoAno)+" − "+money(investimento)+" = "+money(economia),"Gasto anual com Tyton menos investimento inicial em reutilizáveis. Ciclos não são descontados.");
       info("Ponto de equilíbrio unitário","6 utilizações ou conforme o produto","Preço reutilizável ÷ preço descartável; quantidade mínima de utilizações para superar o custo de aquisição.");
       info("Ciclos estimados","Referência operacional","Acompanham durabilidade e reutilização observadas; não amortizam automaticamente o investimento na economia projetada.");
