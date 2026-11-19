@@ -7,7 +7,7 @@
     const equilibrio=()=>PRECO_REUTILIZAVEL/PRECO_TYTON;
     const ciclosMin=item=>Math.floor(equilibrio(item))+1;
     const charts=[];
-    function card(label,value){const e=document.createElement("div");e.className="card";const h=document.createElement("h3"),p=document.createElement("p");h.textContent=label;p.textContent=value;e.append(h,p);resumo.append(e);}
+    function card(label,value,target=resumo){const e=document.createElement("div");e.className="card";const h=document.createElement("h3"),p=document.createElement("p");h.textContent=label;p.textContent=value;e.append(h,p);target.append(e);}
     function info(label,value,desc){const e=document.createElement("article");e.className="cenario-card";const h=document.createElement("h3"),p=document.createElement("p"),s=document.createElement("small");h.textContent=label;p.textContent=value;s.textContent=desc;e.append(h,p,s);cenarios.append(e);}
     function render(data){
       charts.forEach(c=>c.destroy());charts.length=0;
