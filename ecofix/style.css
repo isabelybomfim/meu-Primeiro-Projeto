@@ -660,3 +660,31 @@ footer {
 .ef-user-row span { color:var(--texto); font-size:13px; }
 .ef-user-row small { color:var(--cinza); font-size:11px; }
 #ef-user-status { margin:14px 0 0; color:var(--eco-verde); font-size:13px; }
+
+
+/* Cenário-base Tyton x reutilizável — identidade azul */
+.proposta-base{margin:24px 0;padding:26px;border:1px solid var(--borda);border-radius:18px;background:#fff;box-shadow:var(--sombra)}
+.proposta-cabecalho{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px}
+.proposta-cabecalho h2{margin:5px 0 8px;color:var(--azul-escuro);font-size:21px;font-weight:750}
+.proposta-cabecalho p{margin:0;color:var(--cinza);line-height:1.6}
+.eyebrow{color:var(--azul);font-size:11px;font-weight:800;letter-spacing:1.5px}
+.status-estimativa{flex:0 0 auto;padding:8px 11px;border-radius:999px;background:#eaf0f6;color:#005b9a;font-size:10px;font-weight:800;letter-spacing:.5px}
+.proposta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:13px}
+.proposta-card{padding:18px;border:1px solid var(--borda);border-radius:13px;background:#f7faff;min-width:0}
+.proposta-card h3{margin:0 0 12px;color:var(--cinza);font-size:11px;font-weight:750;text-transform:uppercase;letter-spacing:.5px}
+.proposta-card strong{display:block;color:#005b9a;font-size:clamp(21px,2.4vw,27px);font-weight:800;overflow-wrap:anywhere}
+.proposta-card p{margin:5px 0;color:var(--texto);font-size:13px;font-weight:650}
+.proposta-card small{display:block;color:var(--cinza);font-size:11px;line-height:1.5}
+.proposta-card.destaque{background:#eaf2f9;border-color:#a9cde8}
+.proposta-card.destaque strong{color:#001e50}
+.proposta-metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px;margin-top:15px}
+.proposta-metricas>div{padding:17px;border-left:3px solid #1769aa;background:#f4f8fc;border-radius:8px}
+.proposta-metricas span,.proposta-metricas strong,.proposta-metricas small{display:block}
+.proposta-metricas span{color:var(--cinza);font-size:11px;font-weight:750;text-transform:uppercase}
+.proposta-metricas strong{margin:7px 0;color:#005b9a;font-size:20px}
+.proposta-metricas small{color:var(--cinza);font-size:11px;line-height:1.55}
+.premissas-alerta{margin-top:16px;padding:16px 18px;border:1px solid #d9e3ed;border-radius:12px;background:#f7faff;color:#34465b;font-size:12px;line-height:1.65}
+.premissas-alerta strong{color:#001e50}
+.premissas-alerta ul{margin:8px 0 0;padding-left:19px}
+.premissas-alerta li{margin:4px 0}
+@media(max-width:600px){.proposta-base{padding:18px}.proposta-cabecalho{display:block}.status-estimativa{display:inline-block;margin-top:12px}}
