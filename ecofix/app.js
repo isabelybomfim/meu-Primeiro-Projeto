@@ -55,6 +55,15 @@ function carregarDados() {
                     precoReutilizavel: modelosReutilizaveis[0]
                 }));
             }
+
+            // Padronização dos preços oficiais em todos os registros locais existentes.
+            substituicoes = substituicoes.map(item => ({
+                ...item,
+                nomeConvencional: "Fita Tyton convencional",
+                nomeReutilizavel: "Fita reutilizável",
+                precoConvencional: modelosConvencionais[0],
+                precoReutilizavel: modelosReutilizaveis[0]
+            }));
         }
     } catch (erro) {
         console.log("Erro ao recuperar dados:", erro);
@@ -749,7 +758,7 @@ function atualizarPainel() {
 let ecofixAdmin=false, ecofixLoggedIn=false, ecofixCanEdit=false, ecofixRemoteReady=false, ecofixRemoteEmpty=false, ecofixLocalBackup=null, ecofixClient=null, ecofixApplyingRemote=false;
 const ecofixStatus=document.createElement('p'); ecofixStatus.id='ecofix-status'; document.querySelector('.cabecalho').insertAdjacentElement('afterend',ecofixStatus);
 function ecofixMsg(t){ecofixStatus.textContent=t;}
-function ecofixApply(d){ecofixApplyingRemote=true;substituicoes=Array.isArray(d.substituicoes)?d.substituicoes:[];producaoDiaria=d.producaoDiaria??88;diasMes=d.diasMes??22;mesesAno=d.mesesAno??12;document.querySelector('#producao').value=producaoDiaria;document.querySelector('#diasMes').value=diasMes;document.querySelector('#mesesAno').value=mesesAno;atualizarPainel();ecofixApplyingRemote=false;if(typeof ecofixPermissions==='function')ecofixPermissions();}
+function ecofixApply(d){ecofixApplyingRemote=true;substituicoes=Array.isArray(d.substituicoes)?d.substituicoes.map(item=>({...item,nomeConvencional:"Fita Tyton convencional",nomeReutilizavel:"Fita reutilizável",precoConvencional:1.03,precoReutilizavel:5.75})):[];producaoDiaria=d.producaoDiaria??88;diasMes=d.diasMes??22;mesesAno=d.mesesAno??12;document.querySelector('#producao').value=producaoDiaria;document.querySelector('#diasMes').value=diasMes;document.querySelector('#mesesAno').value=mesesAno;atualizarPainel();ecofixApplyingRemote=false;if(typeof ecofixPermissions==='function')ecofixPermissions();}
 function ecofixPermissions(){cadastro.querySelectorAll('input,select,button').forEach(e=>{if(e!==botaoExportar)e.disabled=!ecofixCanEdit;});configuracao.querySelectorAll('input').forEach(e=>e.disabled=!ecofixCanEdit);document.querySelectorAll('.item-local button').forEach(e=>{if(['Editar','Remover','Salvar alterações','Cancelar'].includes(e.textContent))e.hidden=!ecofixCanEdit;});}
 async function ecofixCheckAdmin(){const {data:{user}}=await ecofixClient.auth.getUser();ecofixLoggedIn=!!user;ecofixCanEdit=ecofixLoggedIn;ecofixAdmin=false;if(user){const {data,error}=await ecofixClient.rpc('is_ecofix_admin');if(!error)ecofixAdmin=data===true;}document.querySelector('#ef-login').hidden=ecofixLoggedIn;document.querySelector('#ef-logout').hidden=!ecofixLoggedIn;document.querySelector('#ef-auth-status').textContent=!user?'Visitante: somente leitura.':ecofixAdmin?'Administradora conectada: edição e gerenciamento de usuários liberados.':'Usuário conectado: edição liberada.';document.querySelector('#ef-migrate').hidden=!(ecofixAdmin&&ecofixRemoteEmpty&&ecofixLocalBackup&&ecofixLocalBackup.substituicoes.length);const userArea=document.querySelector('#ef-user-management');if(userArea)userArea.hidden=!ecofixAdmin;ecofixPermissions();if(ecofixAdmin&&userArea)await ecofixLoadUsers();}
 async function ecofixLoadUsers(){const list=document.querySelector('#ef-users-list');if(!list||!ecofixClient||!ecofixAdmin)return;list.textContent='Carregando usuários...';const {data,error}=await ecofixClient.functions.invoke('ecofix-admin-users',{body:{action:'list'}});if(error||!data||!data.users){list.textContent='Não foi possível carregar os usuários. Confira se a função segura foi publicada no Supabase.';return;}if(!data.users.length){list.textContent='Nenhum usuário cadastrado.';return;}list.innerHTML='';data.users.forEach(user=>{const item=document.createElement('div');item.className='ef-user-row';const info=document.createElement('div');info.className='ef-user-info';const name=document.createElement('strong');name.textContent=user.name||'Usuário';const email=document.createElement('span');email.textContent=user.email||'';const state=document.createElement('small');state.textContent=(user.confirmed?'E-mail confirmado':'Aguardando confirmação')+(user.isAdmin?' • Administradora':'');info.append(name,email,state);item.appendChild(info);if(!user.isAdmin){const remove=document.createElement('button');remove.type='button';remove.textContent='Excluir usuário';remove.className='ef-user-delete';remove.addEventListener('click',()=>ecofixDeleteUser(user));item.appendChild(remove);}list.appendChild(item);});}
