@@ -58,7 +58,7 @@
         <div class="sim-field"><label for="sim-meses">Meses produtivos por ano</label><input id="sim-meses" type="number" min="1" max="12" step="1" value="12"></div>
         <div class="sim-field"><label for="sim-tyton">Preço da Tyton (R$)</label><input id="sim-tyton" type="number" min="0.01" max="100000" step="0.01" value="1.03"></div>
         <div class="sim-field"><label for="sim-reutilizavel">Preço da fita reutilizável (R$)</label><input id="sim-reutilizavel" type="number" min="0.01" max="100000" step="0.01" value="5.75"></div>
-        <div class="sim-field"><label for="sim-ciclos">Ciclos de reutilização estimados</label><input id="sim-ciclos" type="number" min="1" max="10000" step="1" value="20"></div>
+        <div class="sim-field"><label for="sim-ciclos">Ciclos estimados (validação operacional)</label><input id="sim-ciclos" type="number" min="1" max="10000" step="1" value="20"></div>
       </div>
       <p class="small text-secondary mt-3 mb-0">Os 20 ciclos são uma estimativa inicial editável, não uma durabilidade comprovada. Preços e produção também podem ser ajustados.</p>
     </section>
@@ -69,14 +69,14 @@
         <article class="sim-kpi"><span>Gasto anual com descartáveis</span><strong id="kpi-descartavel">—</strong><small id="kpi-volume">Volume anual estimado</small></article>
         <article class="sim-kpi"><span>Investimento inicial reutilizável</span><strong id="kpi-investimento">—</strong><small id="kpi-estoque">Estoque inicial para a produção diária</small></article>
         <article class="sim-kpi"><span>Economia potencial no 1º ano</span><strong id="kpi-primeiro-ano">—</strong><small>Gasto anual descartável menos investimento inicial. Projeção, não resultado realizado.</small></article>
-        <article class="sim-kpi"><span>Custo reutilizável amortizado/ano</span><strong id="kpi-amortizado">—</strong><small id="kpi-economia-amortizada">Comparação por ciclo de reutilização</small></article>
-        <article class="sim-kpi"><span>Economia operacional estimada/ano</span><strong id="kpi-economia">—</strong><small>Descartável anual menos custo reutilizável amortizado.</small></article>
+        <article class="sim-kpi"><span>Redução potencial do custo de aquisição</span><strong id="kpi-reducao">—</strong><small>Economia potencial do primeiro ano dividida pelo gasto anual descartável.</small></article>
+        <article class="sim-kpi"><span>Equivalência financeira do investimento</span><strong id="kpi-equivalencia">—</strong><small>Não representa prazo de retorno operacional comprovado.</small></article>
         <article class="sim-kpi"><span>Ponto de equilíbrio</span><strong id="kpi-equilibrio">—</strong><small>Quantidade mínima de ciclos para o preço reutilizável ficar abaixo do descartável.</small></article>
       </div>
     </section>
 
     <section class="sim-panel">
-      <h2 class="h4 sim-section-title mb-3">Comparação de custos anuais</h2>
+      <h2 class="h4 sim-section-title mb-3">Gasto anual descartável × investimento inicial reutilizável</h2>
       <div class="sim-chart"><canvas id="sim-chart" aria-label="Gráfico de comparação dos custos anuais" role="img"></canvas></div>
       <div class="table-responsive mt-3">
         <table class="table table-striped align-middle">
@@ -85,8 +85,8 @@
             <tr><td>Consumo descartável anual</td><td class="text-end" id="tab-volume">—</td></tr>
             <tr><td>Custo anual descartável</td><td class="text-end" id="tab-descartavel">—</td></tr>
             <tr><td>Investimento inicial reutilizável</td><td class="text-end" id="tab-investimento">—</td></tr>
-            <tr><td>Custo reutilizável amortizado anual</td><td class="text-end" id="tab-amortizado">—</td></tr>
-            <tr><td>Economia operacional estimada anual</td><td class="text-end fw-bold" id="tab-economia">—</td></tr>
+            <tr><td>Economia potencial no primeiro ano</td><td class="text-end fw-bold" id="tab-economia">—</td></tr>
+            <tr><td>Ponto de equilíbrio unitário</td><td class="text-end" id="tab-equilibrio">—</td></tr>
           </tbody>
         </table>
       </div>
@@ -105,7 +105,7 @@
       <ul class="mb-0">
         <li>Economias e indicadores ambientais são projeções, não resultados realizados.</li>
         <li>O investimento inicial considera um conjunto de fitas equivalente à demanda de um dia de produção.</li>
-        <li>O custo reutilizável amortizado divide o preço unitário pelo número estimado de ciclos.</li>
+        <li>Os ciclos estimados são exibidos somente como referência operacional e não alteram a economia principal.</li>
         <li>A projeção depende da recuperação e disponibilidade das fitas; custos operacionais adicionais não estão incluídos.</li>
         <li>Os parâmetros alterados nesta página não são enviados ao Supabase e não modificam os cadastros compartilhados.</li>
       </ul>
@@ -116,6 +116,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=ecofix-home-4"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="simulador.js?v=20261118-1"></script>
+  <script src="simulador.js?v=formula-base-20261118"></script>
 </body>
 </html>
