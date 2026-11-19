@@ -572,7 +572,7 @@ botaoExportar.addEventListener("click", async function () {
         ["H8","H9","H10"].forEach(ref => resumo.getCell(ref).font = { bold: true, color: { argb: "FF102B4E" } });
 
         resumo.mergeCells("A11:H11");
-        resumo.getCell("A11").value = "CENÁRIOS DE ECONOMIA ANUAL";
+        resumo.getCell("A11").value = "ECONOMIA POTENCIAL NO PRIMEIRO ANO";
         resumo.getCell("A11").font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
         resumo.getCell("A11").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1769AA" } };
         const scenarios = [
