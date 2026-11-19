@@ -144,14 +144,14 @@ function custoConvencional(item) {
     return item.quantidade * item.precoConvencional;
 }
 
-// Custo amortizado da reutilizável por caminhão
+// Custo amortizado mantido apenas como referência operacional.
 function custoAmortizado(item, ciclos = item.ciclos) {
-    return item.quantidade * (item.precoReutilizavel / ciclos);
+    return item.quantidade * (item.precoReutilizavel / Math.max(1, Number(ciclos) || 1));
 }
 
-// Economia estimada por caminhão
-function calcularEconomia(item, ciclos = item.ciclos) {
-    return custoConvencional(item) - custoAmortizado(item, ciclos);
+// Custo Tyton por caminhão; ciclos não reduzem a economia projetada.
+function calcularEconomia(item) {
+    return custoConvencional(item);
 }
 
 // Investimento inicial (quantidade × preço reutilizável)
@@ -195,7 +195,7 @@ function atualizarLocais() {
     }
 
     substituicoes.forEach((item, indice) => {
-        const economia = calcularEconomia(item);
+        const custoDescartavel = calcularEconomia(item);
         const equilibrio = ciclosEquilibrio(item);
 
         const linha = document.createElement("div");
@@ -209,17 +209,17 @@ function atualizarLocais() {
             "Produto convencional: " + item.nomeConvencional +
             " | Produto reutilizável: " + item.nomeReutilizavel +
             " | Quantidade: " + item.quantidade +
-            " | Ciclos: " + item.ciclos +
-            " | Economia por caminhão: " +
-                formatarDinheiro(economia) +
-            " | Mínimo para economia positiva: " +
-                ciclosMinimosEconomia(item) + " ciclos";
+            " | Ciclos estimados (validação operacional): " + item.ciclos +
+            " | Custo Tyton por caminhão: " +
+                formatarDinheiro(custoDescartavel) +
+            " | Ponto de equilíbrio: " +
+                ciclosMinimosEconomia(item) + " utilizações";
            
         const alerta = document.createElement("p");
 
         if (item.ciclos <= equilibrio) {
             alerta.textContent =
-                "Atenção: os ciclos informados ainda não geram economia positiva.";
+                "Validação operacional: a estimativa de ciclos ainda não alcançou o ponto de equilíbrio unitário.";
         } else {
             alerta.hidden = true;
         }
@@ -492,8 +492,8 @@ botaoExportar.addEventListener("click", async function () {
 
     const dinheiro = valor => Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     const custoConvencionalItem = item => Number(item.quantidade) * Number(item.precoConvencional);
-    const custoReutilizavelItem = (item, ciclos = item.ciclos) => Number(item.quantidade) * (Number(item.precoReutilizavel) / Math.max(1, Number(ciclos)));
-    const economiaItem = (item, ciclos = item.ciclos) => custoConvencionalItem(item) - custoReutilizavelItem(item, ciclos);
+    const custoReutilizavelItem = item => Number(item.quantidade) * Number(item.precoReutilizavel);
+    const economiaItem = item => custoConvencionalItem(item);
     const pontoEquilibrioItem = item => Number(item.precoReutilizavel) / Math.max(Number(item.precoConvencional), 0.000001);
     const producao = Number(producaoDiaria);
     const dias = Number(diasMes);
@@ -501,9 +501,10 @@ botaoExportar.addEventListener("click", async function () {
     const totalPorCaminhao = substituicoes.reduce((s, item) => s + economiaItem(item), 0);
     const totalDiario = totalPorCaminhao * producao;
     const totalMensal = totalDiario * dias;
-    const totalAnual = totalMensal * meses;
-    const investimento = substituicoes.reduce((s, item) => s + Number(item.quantidade) * Number(item.precoReutilizavel), 0);
-    const anualCenario = fator => substituicoes.reduce((s, item) => s + economiaItem(item, Math.max(1, Math.round(Number(item.ciclos) * fator))), 0) * producao * dias * meses;
+    const gastoAnualDescartavel = totalMensal * meses;
+    const investimento = substituicoes.reduce((s, item) => s + Number(item.quantidade) * Number(item.precoReutilizavel) * producao, 0);
+    const totalAnual = gastoAnualDescartavel - investimento;
+    const anualCenario = () => totalAnual;
 
     try {
         const workbook = new ExcelJS.Workbook();
@@ -531,10 +532,10 @@ botaoExportar.addEventListener("click", async function () {
 
         const kpis = [
             ["Investimento inicial", investimento],
-            ["Economia estimada por caminhão", totalPorCaminhao],
-            ["Economia estimada diária", totalDiario],
-            ["Economia estimada mensal", totalMensal],
-            ["Economia estimada anual", totalAnual]
+            ["Custo Tyton por caminhão", totalPorCaminhao],
+            ["Gasto descartável diário", totalDiario],
+            ["Gasto descartável mensal", totalMensal],
+            ["Economia potencial no 1º ano", totalAnual]
         ];
         const kpiPositions = [["A4","B4"],["D4","E4"],["G4","H4"],["A7","B7"],["D7","E7"]];
         kpis.forEach((item, i) => {
@@ -566,9 +567,7 @@ botaoExportar.addEventListener("click", async function () {
         resumo.getCell("A11").font = { bold: true, size: 12, color: { argb: "FFFFFFFF" } };
         resumo.getCell("A11").fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1769AA" } };
         const scenarios = [
-            ["Conservador · 50% dos ciclos", anualCenario(0.5)],
-            ["Informado · 100% dos ciclos", anualCenario(1)],
-            ["Otimista · 150% dos ciclos", anualCenario(1.5)]
+            ["Economia potencial no primeiro ano (gasto anual Tyton menos investimento inicial)", anualCenario()]
         ];
         scenarios.forEach((s, i) => {
             const row = 12 + i;
@@ -607,27 +606,28 @@ botaoExportar.addEventListener("click", async function () {
             labels,
             datasets: [
                 { label: "Custo convencional", data: substituicoes.map(custoConvencionalItem), backgroundColor: "#9BC8E8" },
-                { label: "Reutilizável amortizada", data: substituicoes.map(item => custoReutilizavelItem(item)), backgroundColor: "#1769AA" }
+                { label: "Investimento inicial reutilizável por caminhão", data: substituicoes.map(item => custoReutilizavelItem(item)), backgroundColor: "#1769AA" }
             ]
         }, { title: "Comparação de custos por local" }) });
 
         const monthLabels = Array.from({ length: Math.max(1, meses) }, (_, i) => "Mês " + (i + 1));
-        chartsToEmbed.push({ title: "Projeção acumulada", image: chartImage("line", {
+        const gastoMensal = totalDiario * dias;
+        chartsToEmbed.push({ title: "Projeção acumulada após investimento inicial", image: chartImage("line", {
             labels: monthLabels,
-            datasets: [["Conservador",0.5],["Informado",1],["Otimista",1.5]].map(([label,factor],i) => ({
-                label,
-                data: monthLabels.map((_,n) => anualCenario(factor) / Math.max(1, meses) * (n + 1)),
-                borderColor: palette[i],
+            datasets: [{
+                label: "Saldo potencial acumulado",
+                data: monthLabels.map((_,n) => gastoMensal * (n + 1) - investimento),
+                borderColor: palette[1],
                 backgroundColor: palette[i],
                 tension: 0.25
             }))
         }, { title: "Projeção acumulada de economia" }) });
 
-        const positivos = substituicoes.filter(item => economiaItem(item) > 0);
-        if (positivos.length) chartsToEmbed.push({ title: "Participação na economia", image: chartImage("doughnut", {
+        const positivos = substituicoes.filter(item => (custoConvencionalItem(item) * producao * dias * meses - Number(item.quantidade) * Number(item.precoReutilizavel) * producao) > 0);
+        if (positivos.length) chartsToEmbed.push({ title: "Participação na economia potencial", image: chartImage("doughnut", {
             labels: positivos.map(item => item.local || "Sem local"),
-            datasets: [{ data: positivos.map(economiaItem), backgroundColor: positivos.map((_,i) => palette[i % palette.length]) }]
-        }, { title: "Participação por local" }) });
+            datasets: [{ data: positivos.map(item => custoConvencionalItem(item) * producao * dias * meses - Number(item.quantidade) * Number(item.precoReutilizavel) * producao), backgroundColor: positivos.map((_,i) => palette[i % palette.length]) }]
+        }, { title: "Economia potencial por local no primeiro ano" }) });
 
         const maxCycle = Math.min(200, Math.max(10, ...substituicoes.map(item => Math.max(Number(item.ciclos) * 2, Math.ceil(pontoEquilibrioItem(item) * 2)))));
         const cycleLabels = Array.from({ length: maxCycle }, (_, i) => i + 1);
@@ -659,7 +659,7 @@ botaoExportar.addEventListener("click", async function () {
             item.local || "", item.nomeConvencional || "-", item.nomeReutilizavel || "-",
             Number(item.quantidade) || 0, Number(item.precoConvencional) || 0,
             Number(item.precoReutilizavel) || 0, Number(item.ciclos) || 0,
-            Number(item.quantidade) * Number(item.precoReutilizavel), economiaItem(item),
+            Number(item.quantidade) * Number(item.precoReutilizavel) * producao, economiaItem(item),
             pontoEquilibrioItem(item)
         ]);
         tabela.addTable({
@@ -670,8 +670,8 @@ botaoExportar.addEventListener("click", async function () {
             columns: [
                 { name: "Local" }, { name: "Produto convencional" }, { name: "Produto reutilizável" },
                 { name: "Quantidade por caminhão" }, { name: "Preço convencional (R$)" },
-                { name: "Preço reutilizável (R$)" }, { name: "Ciclos estimados" },
-                { name: "Investimento inicial (R$)" }, { name: "Economia por caminhão (R$)" },
+                { name: "Preço reutilizável (R$)" }, { name: "Ciclos estimados (validação operacional)" },
+                { name: "Investimento inicial (R$)" }, { name: "Custo Tyton por caminhão (R$)" },
                 { name: "Ponto de equilíbrio (ciclos)" }
             ],
             rows
@@ -689,7 +689,7 @@ botaoExportar.addEventListener("click", async function () {
 
         resumo.mergeCells("A" + (18 + Math.ceil(chartsToEmbed.length / 2) * 22) + ":H" + (18 + Math.ceil(chartsToEmbed.length / 2) * 22));
         const noteRow = 18 + Math.ceil(chartsToEmbed.length / 2) * 22;
-        resumo.getCell("A" + noteRow).value = "Observação: os valores são estimativas com base nos preços, ciclos e parâmetros cadastrados. Custos de inspeção, limpeza e recuperação não estão incluídos."; 
+        resumo.getCell("A" + noteRow).value = "Observação: economia potencial = gasto anual com Tyton menos investimento inicial em reutilizáveis. Ciclos são referência operacional; perdas, reposições, inspeção, limpeza, recuperação e logística não estão incluídas."; 
         resumo.getCell("A" + noteRow).alignment = { wrapText: true, vertical: "middle" };
         resumo.getCell("A" + noteRow).font = { italic: true, color: { argb: "FF64748B" }, size: 10 };
         resumo.getRow(noteRow).height = 34;
@@ -715,23 +715,27 @@ botaoExportar.addEventListener("click", async function () {
 
 // Atualizar todos os indicadores e informações do EcoFix
 function atualizarPainel() {
-    const economiaPorCaminhao = substituicoes.reduce(
+    const custoTytonPorCaminhao = substituicoes.reduce(
         (total, item) => total + calcularEconomia(item),
         0
     );
 
-    const economiaDiaria = economiaPorCaminhao * producaoDiaria;
-    const economiaMensal = economiaDiaria * diasMes;
-    const economiaAnual = economiaMensal * mesesAno;
+    const gastoDiario = custoTytonPorCaminhao * producaoDiaria;
+    const gastoMensal = gastoDiario * diasMes;
+    const investimentoInicialTotal = substituicoes.reduce(
+        (total, item) => total + investimentoInicial(item) * producaoDiaria,
+        0
+    );
+    const economiaAnual = gastoMensal * mesesAno - investimentoInicialTotal;
 
     indicadores[0].textContent =
-        formatarDinheiro(economiaPorCaminhao);
+        formatarDinheiro(custoTytonPorCaminhao);
 
     indicadores[1].textContent =
-        formatarDinheiro(economiaDiaria);
+        formatarDinheiro(gastoDiario);
 
     indicadores[2].textContent =
-        formatarDinheiro(economiaMensal);
+        formatarDinheiro(gastoMensal);
 
     indicadores[3].textContent =
         formatarDinheiro(economiaAnual);
