@@ -7,22 +7,37 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css?v=simulador-20261118">
   <style>
-    .sim-wrap{max-width:1180px;margin:32px auto;padding:0 18px}
-    .sim-panel{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:22px;margin:20px 0;box-shadow:0 5px 18px #001e500d}
-    .sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
-    .sim-field label{display:block;font-weight:700;font-size:.9rem;margin-bottom:6px;color:var(--azul-escuro)}
-    .sim-field input{width:100%;border:1px solid var(--borda);border-radius:8px;padding:10px;background:#fff;color:var(--texto)}
-    .sim-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
-    .sim-kpi{background:#fff;border:1px solid var(--borda);border-radius:12px;padding:18px}
-    .sim-kpi span{display:block;color:var(--cinza);font-size:.88rem}
-    .sim-kpi strong{display:block;font-size:1.45rem;color:var(--azul-escuro);margin:7px 0}
-    .sim-kpi small{color:var(--cinza);line-height:1.4}
-    .sim-status{font-size:.9rem;color:var(--cinza)}
-    .sim-warning{background:#fff8e6;border:1px solid #f1d48b;border-radius:10px;padding:14px}
-    .sim-actions{display:flex;gap:10px;flex-wrap:wrap}
-    .sim-chart{max-width:850px;margin:auto}
-    .sim-section-title{color:var(--azul-escuro);font-weight:800}
-    @media(max-width:600px){.sim-panel{padding:16px}.sim-kpi strong{font-size:1.2rem}}
+.sim-wrap{max-width:1180px;margin:38px auto 56px;padding:0 20px}
+.sim-hero{position:relative;overflow:hidden;padding:36px 38px;border-radius:22px;background:linear-gradient(120deg,#102b4e,#174d7a 68%,#237db2);color:#fff;box-shadow:0 16px 36px #102b4e22}
+.sim-hero:after{content:'';position:absolute;width:270px;height:270px;right:-75px;top:-105px;border:1px solid #ffffff28;border-radius:50%;box-shadow:0 0 0 28px #ffffff0c,0 0 0 58px #ffffff08}
+.sim-hero h2{font-size:clamp(27px,4vw,38px);font-weight:800;letter-spacing:-1px;margin:0 0 10px}
+.sim-hero p{max-width:720px;color:#d9e9f5;line-height:1.65;margin:0}
+.sim-status{display:inline-flex;margin-top:18px;padding:8px 13px;border-radius:30px;background:#ffffff18;color:#eaf6ff;font-size:12px}
+.sim-panel{background:#fff;border:1px solid #e1e9f1;border-radius:18px;padding:25px;margin:22px 0;box-shadow:0 9px 28px #102b4e0b}
+.sim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
+.sim-field label{display:block;font-weight:700;font-size:.82rem;margin:0 0 7px;color:#344b63}
+.sim-field input{width:100%;border:1px solid #d4dfeb;border-radius:10px;padding:11px 12px;background:#fbfdff;color:#172b45}
+.sim-field input:focus{outline:0;border-color:#3987bd;box-shadow:0 0 0 3px #3987bd20}
+.sim-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px}
+.sim-kpi{position:relative;min-height:142px;background:#fff;border:1px solid #e1e9f1;border-radius:16px;padding:20px;box-shadow:0 8px 22px #102b4e0a}
+.sim-kpi:before{content:'';position:absolute;left:0;top:16px;bottom:16px;width:4px;border-radius:0 5px 5px 0;background:#237db2}
+.sim-kpi span{display:block;color:#64788c;font-size:.78rem;font-weight:700;line-height:1.4;text-transform:uppercase;letter-spacing:.35px}
+.sim-kpi strong{display:block;font-size:clamp(1.25rem,2.3vw,1.7rem);color:#102b4e;margin:12px 0 7px;overflow-wrap:anywhere}
+.sim-kpi small{color:#718096;line-height:1.45;font-size:.75rem}
+.sim-section-title{color:#102b4e;font-weight:800;letter-spacing:-.3px}
+.sim-actions{display:flex;gap:10px;flex-wrap:wrap}
+.sim-actions .btn{margin:0;border-radius:10px;padding:10px 16px;font-weight:700;font-size:.85rem}
+.sim-actions .btn-primary{background:#1769aa;border-color:#1769aa}
+.sim-actions .btn-primary:hover{background:#102b4e;border-color:#102b4e}
+.sim-chart{max-width:900px;margin:12px auto 0;padding:12px}
+.sim-table{border-color:#e4ebf2}
+.sim-table thead th{background:#edf4fa;color:#28435f;font-size:.77rem;text-transform:uppercase;letter-spacing:.35px;padding:13px}
+.sim-table td{padding:13px;font-size:.88rem}
+.sim-result{background:linear-gradient(135deg,#edf7f2,#fff);border-color:#d7eee2}
+.sim-result:before{background:#15966a}
+.sim-result strong{color:#137b57}
+.sim-note{color:#718096;font-size:.78rem;line-height:1.55}
+@media(max-width:600px){.sim-wrap{margin:20px auto 36px;padding:0 12px}.sim-hero{padding:25px 22px;border-radius:17px}.sim-panel{padding:18px}.sim-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.sim-kpi{padding:16px 13px;min-height:135px}.sim-kpi strong{font-size:1.12rem}.sim-kpi span{font-size:.68rem}.sim-actions{width:100%}.sim-actions .btn{flex:1}.sim-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}}
   </style>
 </head>
 <body>
@@ -37,18 +52,18 @@
   </header>
 
   <main class="sim-wrap">
-    <section class="boas-vindas">
+    <section class="sim-hero mb-4">
       <h2>Simulador EcoFix</h2>
-      <p>Ajuste as premissas e compare o custo das fitas descartáveis com a alternativa reutilizável. Os testes ficam somente neste navegador e não alteram os cadastros nem o banco compartilhado.</p>
-      <p id="sim-status" class="sim-status" role="status">Carregando parâmetros do EcoFix...</p>
+      <p>Visualize o impacto financeiro da substituição das fitas descartáveis pela solução reutilizável. Ajuste os dados, acompanhe os resultados em tempo real e exporte um relatório profissional.</p>
+      <p id="sim-status" class="sim-status" role="status">Carregando dados...</p>
     </section>
 
     <section class="sim-panel">
       <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
-        <div><h2 class="h4 sim-section-title mb-1">Parâmetros da simulação</h2><p class="text-secondary mb-0 small">Valores iniciais baseados nas premissas atuais do projeto.</p></div>
+        <div><h2 class="h4 sim-section-title mb-1">Configurar simulação</h2><p class="text-secondary mb-0 small">Altere os valores para atualizar os indicadores instantaneamente.</p></div>
         <div class="sim-actions">
           <button id="sim-reset" type="button" class="btn btn-outline-secondary">Restaurar padrão</button>
-          <button id="sim-csv" type="button" class="btn btn-primary">Exportar CSV</button>
+          <button id="sim-excel" type="button" class="btn btn-primary">↓ Exportar Excel</button>
         </div>
       </div>
       <div class="sim-grid">
@@ -60,7 +75,7 @@
         <div class="sim-field"><label for="sim-reutilizavel">Preço da fita reutilizável (R$)</label><input id="sim-reutilizavel" type="number" min="0.01" max="100000" step="0.01" value="5.75"></div>
         <div class="sim-field"><label for="sim-ciclos">Ciclos estimados (validação operacional)</label><input id="sim-ciclos" type="number" min="1" max="10000" step="1" value="20"></div>
       </div>
-      <p class="small text-secondary mt-3 mb-0">Os 20 ciclos são uma estimativa inicial editável, não uma durabilidade comprovada. Preços e produção também podem ser ajustados.</p>
+      <p class="sim-note mt-3 mb-0">Os ciclos são uma referência operacional. Preços e produção podem ser ajustados para simular outros cenários.</p>
     </section>
 
     <section class="mb-4">
@@ -68,8 +83,8 @@
       <div class="sim-kpis">
         <article class="sim-kpi"><span>Gasto anual com descartáveis</span><strong id="kpi-descartavel">—</strong><small id="kpi-volume">Volume anual estimado</small></article>
         <article class="sim-kpi"><span>Investimento inicial reutilizável</span><strong id="kpi-investimento">—</strong><small id="kpi-estoque">Estoque inicial para a produção diária</small></article>
-        <article class="sim-kpi"><span>Economia potencial no 1º ano</span><strong id="kpi-primeiro-ano">—</strong><small>Gasto anual descartável menos investimento inicial. Projeção, não resultado realizado.</small></article>
-        <article class="sim-kpi"><span>Redução potencial do custo de aquisição</span><strong id="kpi-reducao">—</strong><small>Economia potencial do primeiro ano dividida pelo gasto anual descartável.</small></article>
+        <article class="sim-kpi sim-result"><span>Economia potencial no 1º ano</span><strong id="kpi-primeiro-ano">—</strong><small>Gasto anual descartável menos investimento inicial. Projeção, não resultado realizado.</small></article>
+        <article class="sim-kpi sim-result"><span>Redução potencial do custo de aquisição</span><strong id="kpi-reducao">—</strong><small>Economia potencial do primeiro ano dividida pelo gasto anual descartável.</small></article>
         <article class="sim-kpi"><span>Equivalência financeira do investimento</span><strong id="kpi-equivalencia">—</strong><small>Não representa prazo de retorno operacional comprovado.</small></article>
         <article class="sim-kpi"><span>Ponto de equilíbrio</span><strong id="kpi-equilibrio">—</strong><small>Quantidade mínima de ciclos para o preço reutilizável ficar abaixo do descartável.</small></article>
       </div>
@@ -79,7 +94,7 @@
       <h2 class="h4 sim-section-title mb-3">Gasto anual descartável × investimento inicial reutilizável</h2>
       <div class="sim-chart"><canvas id="sim-chart" aria-label="Gráfico de comparação dos custos anuais" role="img"></canvas></div>
       <div class="table-responsive mt-3">
-        <table class="table table-striped align-middle">
+        <table class="table table-striped align-middle sim-table">
           <thead><tr><th>Indicador</th><th class="text-end">Valor projetado</th></tr></thead>
           <tbody>
             <tr><td>Consumo descartável anual</td><td class="text-end" id="tab-volume">—</td></tr>
@@ -100,22 +115,14 @@
       <div class="sim-warning mt-3"><strong>Importante:</strong> este indicador não representa resíduo efetivamente evitado. Ele pressupõe que as fitas reutilizáveis sejam recuperadas, estejam disponíveis e substituam as unidades descartáveis em todos os ciclos. Perdas, danos, limpeza, inspeção, logística e reposição não estão incluídos.</div>
     </section>
 
-    <section class="sim-panel">
-      <h2 class="h4 sim-section-title">Premissas e limites</h2>
-      <ul class="mb-0">
-        <li>Economias e indicadores ambientais são projeções, não resultados realizados.</li>
-        <li>O investimento inicial considera um conjunto de fitas equivalente à demanda de um dia de produção.</li>
-        <li>Os ciclos estimados são exibidos somente como referência operacional e não alteram a economia principal.</li>
-        <li>A projeção depende da recuperação e disponibilidade das fitas; custos operacionais adicionais não estão incluídos.</li>
-        <li>Os parâmetros alterados nesta página não são enviados ao Supabase e não modificam os cadastros compartilhados.</li>
-      </ul>
-    </section>
+
   </main>
   <footer><p>EcoFix © 2026 | Projeto de Engenharia</p></footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js?v=ecofix-home-4"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="simulador.js?v=formula-base-20261118"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <script src="simulador.js?v=excel-visual-20261119"></script>
 </body>
 </html>
