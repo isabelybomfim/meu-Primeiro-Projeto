@@ -178,19 +178,6 @@ function ciclosMinimosEconomia(item) {
     return Math.floor(ciclosEquilibrio(item)) + 1;
 }
 
-// Economia anual para um fator aplicado aos ciclos (cenários)
-function economiaAnualCenario(fator) {
-    const porCaminhao = substituicoes.reduce(
-        (total, item) => {
-            const ciclos = Math.max(1, Math.round(item.ciclos * fator));
-            return total + calcularEconomia(item, ciclos);
-        },
-        0
-    );
-
-    return porCaminhao * producaoDiaria * diasMes * mesesAno;
-}
-
 function atualizarAnalise() {}
 function atualizarGraficos() {}
 
