@@ -35,48 +35,17 @@
       charts.push(new Chart(document.querySelector("#graficoEquilibrio"),{type:"line",data:{labels:cycleLabels,datasets:items.map((i,n)=>({label:i.local,data:cycleLabels.map(c=>Number(i.quantidade)*PRECO_REUTILIZAVEL/c),borderColor:colors[n%colors.length],pointRadius:0,tension:.2}))},options:{...opts,plugins:{...opts.plugins,title:{display:true,text:"Custo reutilizável equivalente por ciclo (referência operacional)"}}}}));
     }
     async function start(){
-        if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){status.textContent="Não foi possível conectar ao banco de dados.";return;}
-        const client=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY);
-        const panel=document.querySelector("#ef-login-panel");
-        const statusAuth=document.querySelector("#ef-auth-status");
-        const login=document.querySelector("#ef-login");
-        const logout=document.querySelector("#ef-logout");
-        const manageLink=document.querySelector("#ef-manage-link");
-        document.querySelector("#ef-admin-toggle").addEventListener("click",()=>{panel.hidden=!panel.hidden;});
-        document.querySelector("#ef-close-login").addEventListener("click",()=>{panel.hidden=true;});
-        async function refreshAuth(){
-            const {data:{user}}=await client.auth.getUser();
-            let isAdmin=false;
-            if(user){
-                const result=await client.rpc("is_ecofix_admin");
-                isAdmin=!result.error&&result.data===true;
-            }
-            statusAuth.textContent=!user?"Visitante: somente leitura.":isAdmin?"Administrador conectado.":"Usuário conectado sem permissão administrativa.";
-            login.hidden=!!user;
-            logout.hidden=!user;
-            manageLink.hidden=!isAdmin;
+        if(!window.supabase||!window.ECOFIX_SUPABASE_URL||!window.ECOFIX_SUPABASE_KEY){
+            status.textContent="Não foi possível conectar ao banco de dados.";
+            return;
         }
-        login.addEventListener("submit",async event=>{
-            event.preventDefault();
-            statusAuth.textContent="Verificando acesso...";
-            const {error}=await client.auth.signInWithPassword({
-                email:document.querySelector("#ef-email").value.trim(),
-                password:document.querySelector("#ef-password").value
-            });
-            document.querySelector("#ef-password").value="";
-            if(error){statusAuth.textContent="Não foi possível entrar. Confira o e-mail e a senha.";return;}
-            await refreshAuth();
-        });
-        logout.addEventListener("click",async()=>{
-            await client.auth.signOut();
-            await refreshAuth();
-        });
-        await refreshAuth();
-        client.auth.onAuthStateChange(()=>setTimeout(refreshAuth,0));
+        const client=window.supabase.createClient(window.ECOFIX_SUPABASE_URL,window.ECOFIX_SUPABASE_KEY);
         const {data,error}=await client.from("ecofix_state").select("data").eq("id",1).single();
         if(error){console.error(error);status.textContent="Erro ao carregar os dados compartilhados.";return;}
         render(data.data||{});
-        client.channel("ecofix-analysis").on("postgres_changes",{event:"*",schema:"public",table:"ecofix_state",filter:"id=eq.1"},payload=>{if(payload.new?.data)render(payload.new.data);}).subscribe();
+        client.channel("ecofix-analysis").on("postgres_changes",{event:"*",schema:"public",table:"ecofix_state",filter:"id=eq.1"},payload=>{
+            if(payload.new?.data)render(payload.new.data);
+        }).subscribe();
     }
     start().catch(error=>{console.error(error);status.textContent="Falha ao carregar a análise.";});
 })();
